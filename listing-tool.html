@@ -6,139 +6,156 @@
 <title>CTT Listing Tool — Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Pacifico&display=swap" rel="stylesheet">
 <style>
-:root{--red:#8B1A1A;--navy:#1B2A5E;--white:#fff;--off:#F7F8FA;--border:#E2E5ED;--text:#1B2A5E;--muted:#6B7499;--gold:#A07010;--gold-bg:#FFF8E8;--gold-bd:#E8D080;--green:#1A6B3A;--green-bg:#EAF5EE;--green-bd:#A8D8B8;}
+:root{--red:#8B1A1A;--navy:#1B2A5E;--off:#F7F8FA;--border:#E2E5ED;--muted:#6B7499;--gold:#A07010;--gold-bg:#FFF8E8;--gold-bd:#E8D080;--green:#1A6B3A;--green-bg:#EAF5EE;--green-bd:#A8D8B8;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',Arial,sans-serif;background:#F7F8FA;color:#1B2A5E;min-height:100vh;}
-.site-header{background:#fff;border-bottom:3px solid #8B1A1A;padding:1rem 1rem .75rem;text-align:center;}
+/* HEADER */
+.site-header{background:#fff;border-bottom:3px solid var(--red);padding:1rem 1rem .75rem;text-align:center;}
 .site-header img{max-width:280px;width:60%;height:auto;display:block;margin:0 auto .35rem;}
-.site-header .sub{font-size:.72rem;font-weight:600;color:#6B7499;letter-spacing:.14em;text-transform:uppercase;}
+.site-header .sub{font-size:.72rem;font-weight:600;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;}
+/* GATE */
 #gate{display:flex;align-items:center;justify-content:center;min-height:60vh;padding:2rem;}
-.gate-box{background:#fff;border:1px solid #E2E5ED;border-top:4px solid #8B1A1A;border-radius:10px;padding:2.5rem 2rem;width:100%;max-width:360px;text-align:center;}
-.gate-box h2{font-size:1.1rem;font-weight:600;color:#1B2A5E;margin-bottom:.4rem;}
-.gate-box p{font-size:.84rem;color:#6B7499;margin-bottom:1.5rem;}
-.gate-box input{width:100%;border:1px solid #E2E5ED;border-radius:6px;padding:10px 14px;font-size:1rem;font-family:'DM Sans',Arial,sans-serif;color:#1B2A5E;text-align:center;letter-spacing:.2em;outline:none;margin-bottom:1rem;}
-.gate-box input:focus{border-color:#1B2A5E;}
-.gate-err{font-size:.8rem;color:#8B1A1A;margin-top:-.5rem;margin-bottom:.75rem;display:none;}
+.gate-box{background:#fff;border:1px solid var(--border);border-top:4px solid var(--red);border-radius:10px;padding:2.5rem 2rem;width:100%;max-width:360px;text-align:center;}
+.gate-box h2{font-size:1.1rem;font-weight:600;color:var(--navy);margin-bottom:.4rem;}
+.gate-box p{font-size:.84rem;color:var(--muted);margin-bottom:1.5rem;}
+.gate-input{width:100%;border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:1rem;font-family:'DM Sans',Arial,sans-serif;color:var(--navy);text-align:center;letter-spacing:.2em;outline:none;margin-bottom:1rem;}
+.gate-input:focus{border-color:var(--navy);}
+.gate-err{font-size:.8rem;color:var(--red);display:none;margin-bottom:.75rem;}
 .gate-err.show{display:block;}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:6px;font-family:'DM Sans',Arial,sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:opacity .15s,transform .1s;}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:6px;font-family:'DM Sans',Arial,sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:opacity .15s,transform .1s;white-space:nowrap;}
 .btn:active{transform:scale(.97);}
-.btn-navy{background:#1B2A5E;color:#fff;}.btn-navy:hover{opacity:.88;}
-.btn-red{background:#8B1A1A;color:#fff;}.btn-red:hover{opacity:.88;}
-.btn-green{background:#1A6B3A;color:#fff;}.btn-green:hover{opacity:.88;}
-.btn-gold{background:#A07010;color:#fff;}.btn-gold:hover{opacity:.88;}
-.btn-outline{background:#fff;color:#1B2A5E;border:1px solid #E2E5ED;}.btn-outline:hover{background:#F7F8FA;}
+.btn-navy{background:var(--navy);color:#fff;}.btn-navy:hover{opacity:.88;}
+.btn-red{background:var(--red);color:#fff;}.btn-red:hover{opacity:.88;}
+.btn-green{background:var(--green);color:#fff;}.btn-green:hover{opacity:.88;}
+.btn-outline{background:#fff;color:var(--navy);border:1px solid var(--border);}.btn-outline:hover{background:var(--off);}
 .btn-sm{padding:6px 12px;font-size:.78rem;}
-.btn[disabled]{opacity:.45;cursor:not-allowed;}
+.btn[disabled]{opacity:.4;cursor:not-allowed;}
+/* TOOL */
 #tool{display:none;}#tool.on{display:block;}
-.admin-bar{background:#2d1a1a;border-bottom:2px solid #8B1A1A;padding:.5rem 1rem;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
-.admin-badge{background:#8B1A1A;color:#fff;font-size:.65rem;font-weight:700;padding:2px 10px;border-radius:3px;letter-spacing:.07em;text-transform:uppercase;}
-.admin-back{font-size:.78rem;color:rgba(255,255,255,.6);text-decoration:none;display:flex;align-items:center;gap:5px;}
+.admin-bar{background:#2d1a1a;border-bottom:2px solid var(--red);padding:.5rem 1rem;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+.admin-badge{background:var(--red);color:#fff;font-size:.65rem;font-weight:700;padding:2px 10px;border-radius:3px;letter-spacing:.07em;text-transform:uppercase;}
+.admin-back{font-size:.78rem;color:rgba(255,255,255,.6);text-decoration:none;}
 .admin-back:hover{color:#fff;}
-.wrap{max-width:1100px;margin:0 auto;padding:1.5rem 1rem 3rem;}
-.page-tabs{background:#fff;border-bottom:2px solid #E2E5ED;display:flex;justify-content:center;}
-.page-tab{padding:.8rem 1.4rem;font-size:.85rem;font-weight:600;color:#6B7499;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;user-select:none;white-space:nowrap;display:flex;align-items:center;gap:6px;}
-.page-tab:hover{color:#1B2A5E;}
-.page-tab.on{color:#1B2A5E;border-bottom-color:#8B1A1A;}
+/* PAGE TABS */
+.page-tabs{background:#fff;border-bottom:2px solid var(--border);display:flex;justify-content:center;}
+.page-tab{padding:.8rem 1.4rem;font-size:.85rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;user-select:none;white-space:nowrap;display:flex;align-items:center;gap:6px;}
+.page-tab:hover{color:var(--navy);}
+.page-tab.on{color:var(--navy);border-bottom-color:var(--red);}
 .page-section{display:none;}.page-section.on{display:block;}
-.card{background:#fff;border:1px solid #E2E5ED;border-radius:10px;margin-bottom:1.25rem;overflow:hidden;}
-.card-hd{background:#F7F8FA;border-bottom:1px solid #E2E5ED;padding:.85rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
-.card-hd-title{font-size:.88rem;font-weight:700;color:#1B2A5E;display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.06em;}
+.wrap{max-width:1100px;margin:0 auto;padding:1.5rem 1rem 3rem;}
+/* CARDS */
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:1.25rem;overflow:hidden;}
+.card-hd{background:var(--off);border-bottom:1px solid var(--border);padding:.85rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.card-hd-title{font-size:.88rem;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.06em;}
 .card-bd{padding:1.1rem;}
+/* FIELDS */
+.field{display:flex;flex-direction:column;gap:4px;}
+.field label{font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
+.field input,.field select,.field textarea{border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'DM Sans',Arial,sans-serif;font-size:.88rem;color:var(--navy);background:var(--off);outline:none;width:100%;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--navy);background:#fff;}
+.field textarea{resize:vertical;}
+.field-note{font-size:.72rem;color:var(--muted);margin-top:2px;}
 .cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 @media(max-width:600px){.cfg-grid{grid-template-columns:1fr;}}
-.field{display:flex;flex-direction:column;gap:4px;}
-.field label{font-size:.75rem;font-weight:600;color:#6B7499;text-transform:uppercase;letter-spacing:.07em;}
-.field input,.field select,.field textarea{border:1px solid #E2E5ED;border-radius:6px;padding:8px 11px;font-family:'DM Sans',Arial,sans-serif;font-size:.88rem;color:#1B2A5E;background:#F7F8FA;outline:none;width:100%;}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:#1B2A5E;background:#fff;}
-.field textarea{resize:vertical;min-height:80px;}
-.field-note{font-size:.75rem;color:#6B7499;margin-top:2px;}
+/* BANNERS */
 .banner{border-radius:7px;padding:.75rem 1rem;font-size:.85rem;font-weight:500;display:flex;align-items:flex-start;gap:8px;margin-bottom:1rem;}
 .banner.info{background:#EEF2FF;border:1px solid #C7D2FE;color:#3730A3;}
-.banner.warn{background:#FFF8E8;border:1px solid #E8D080;color:#A07010;}
+.banner.warn{background:var(--gold-bg);border:1px solid var(--gold-bd);color:var(--gold);}
 .banner.err{background:#FEE2E2;border:1px solid #FECACA;color:#991B1B;}
-.banner.ok{background:#EAF5EE;border:1px solid #A8D8B8;color:#1A6B3A;}
+.banner.ok{background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green);}
 .banner.hide{display:none;}
-.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid #E2E5ED;}
-table{width:100%;border-collapse:collapse;font-size:.82rem;}
-thead th{background:#F7F8FA;padding:9px 12px;text-align:left;font-size:.68rem;font-weight:700;color:#6B7499;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid #E2E5ED;white-space:nowrap;}
-tbody tr{border-bottom:1px solid #E2E5ED;}
-tbody tr:last-child{border-bottom:none;}
-tbody tr:hover{background:#F7F8FA;}
-tbody td{padding:9px 12px;color:#1B2A5E;vertical-align:middle;}
-.td-mute{color:#6B7499;}
-.td-title{font-weight:500;max-width:240px;}
-.td-title span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.status-pill{display:inline-block;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
-.pill-ready{background:#EAF5EE;color:#1A6B3A;border:1px solid #A8D8B8;}
-.pill-missing{background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;}
-.pill-posted{background:#DBEAFE;color:#1E40AF;border:1px solid #BFDBFE;}
-.pill-error{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;}
-.pill-pending{background:#F7F8FA;color:#6B7499;border:1px solid #E2E5ED;}
-.pill-dup{background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;}
-.photo-thumb{display:flex;gap:4px;flex-wrap:wrap;}
-.photo-thumb img{width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #E2E5ED;}
-.photo-count{font-size:.72rem;color:#6B7499;white-space:nowrap;}
-.progress-wrap{margin-top:1rem;}
-.progress-bar-outer{background:#E2E5ED;border-radius:20px;height:10px;overflow:hidden;margin-bottom:.5rem;}
-.progress-bar-inner{height:100%;background:#1B2A5E;border-radius:20px;transition:width .4s ease;width:0%;}
-.progress-label{font-size:.8rem;color:#6B7499;text-align:center;}
-.log-box{background:#F7F8FA;border:1px solid #E2E5ED;border-radius:7px;padding:.85rem;margin-top:.75rem;max-height:220px;overflow-y:auto;font-size:.8rem;font-family:'Courier New',monospace;color:#1B2A5E;line-height:1.7;}
-.log-ok{color:#1A6B3A;}.log-err{color:#8B1A1A;}.log-info{color:#6B7499;}
-.export-list{display:flex;flex-direction:column;gap:10px;}
-.export-item{background:#F7F8FA;border:1px solid #E2E5ED;border-radius:8px;padding:.9rem 1rem;}
-.export-item-title{font-size:.8rem;font-weight:700;color:#1B2A5E;margin-bottom:.5rem;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
+/* DIVIDER */
+.divider{border:none;border-top:1px solid var(--border);margin:1rem 0;}
+/* LISTING CARDS */
+.listing-grid{display:flex;flex-direction:column;gap:1rem;}
+.listing-card{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:box-shadow .15s;}
+.listing-card.selected{border-color:var(--navy);box-shadow:0 0 0 2px rgba(27,42,94,.15);}
+.listing-card.has-issues{border-color:var(--gold-bd);}
+.lcard-hd{background:var(--off);border-bottom:1px solid var(--border);padding:.75rem 1rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.lcard-num{font-size:.72rem;font-weight:700;color:var(--muted);min-width:24px;}
+.lcard-chk{width:18px;height:18px;cursor:pointer;accent-color:var(--navy);flex-shrink:0;}
+.lcard-tmpl{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:3px;text-transform:uppercase;letter-spacing:.05em;}
+.tmpl-common{background:#EEF2FF;color:#3730A3;border:1px solid #C7D2FE;}
+.tmpl-variant{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
+.tmpl-limited{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-bd);}
+.tmpl-signed{background:#FCE7F3;color:#9D174D;border:1px solid #FBCFE8;}
+.lcard-name{font-size:.9rem;font-weight:600;color:var(--navy);flex:1;}
+.lcard-price{font-size:.9rem;font-weight:700;color:var(--green);}
+.lcard-actions{display:flex;gap:6px;margin-left:auto;}
+.lcard-body{padding:1rem;}
+.lcard-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;}
+@media(max-width:640px){.lcard-fields{grid-template-columns:1fr;}}
+.lcard-full{grid-column:1/-1;}
+/* TITLE METER */
+.title-meter{margin-top:5px;}
+.title-bar-wrap{background:var(--border);border-radius:20px;height:5px;overflow:hidden;margin-bottom:3px;}
+.title-bar{height:100%;border-radius:20px;transition:width .15s,background .15s;}
+.title-count{font-size:.7rem;font-weight:600;}
+.title-count.low{color:var(--red);}.title-count.ok{color:var(--green);}.title-count.full{color:var(--navy);}
+.title-tip{font-size:.7rem;color:var(--muted);margin-top:1px;line-height:1.4;}
+/* ISSUE FLAGS */
+.issue-flag{font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:3px;display:inline-flex;align-items:center;gap:4px;}
+.flag-dup{background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;}
+.flag-short{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-bd);}
+.flag-ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
+.flags-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.75rem;}
+/* EXPORT PANELS */
+.export-box{background:var(--off);border:1px solid var(--border);border-radius:7px;padding:.85rem 1rem;margin-top:.75rem;}
+.export-box-title{font-size:.75rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem;display:flex;justify-content:space-between;align-items:center;}
 .export-text{font-size:.8rem;color:#444;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
-.copy-btn{font-size:.7rem;padding:3px 10px;border-radius:4px;background:#1B2A5E;color:#fff;border:none;cursor:pointer;font-family:'DM Sans',Arial,sans-serif;font-weight:600;white-space:nowrap;}
-.copy-btn.copied{background:#1A6B3A;}
-.results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem;}
-.result-stat{background:#fff;border:1px solid #E2E5ED;border-radius:8px;padding:14px;text-align:center;}
+.copy-btn{font-size:.7rem;padding:3px 10px;border-radius:4px;background:var(--navy);color:#fff;border:none;cursor:pointer;font-weight:600;}
+.copy-btn.copied{background:var(--green);}
+/* BULK BAR */
+.bulk-bar{position:sticky;bottom:0;background:#fff;border-top:2px solid var(--navy);padding:.85rem 1.1rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 -4px 20px rgba(27,42,94,.1);z-index:100;}
+.bulk-bar-count{font-size:.85rem;font-weight:600;color:var(--navy);}
+/* PROGRESS */
+.progress-wrap{margin-top:1rem;}
+.progress-bar-outer{background:var(--border);border-radius:20px;height:10px;overflow:hidden;margin-bottom:.5rem;}
+.progress-bar-inner{height:100%;background:var(--navy);border-radius:20px;transition:width .4s ease;width:0%;}
+.progress-label{font-size:.8rem;color:var(--muted);text-align:center;}
+.log-box{background:var(--off);border:1px solid var(--border);border-radius:7px;padding:.85rem;margin-top:.75rem;max-height:200px;overflow-y:auto;font-size:.8rem;font-family:'Courier New',monospace;line-height:1.7;}
+.log-ok{color:var(--green);}.log-err{color:var(--red);}.log-info{color:var(--muted);}
+/* RESULTS */
+.results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:1rem;}
+.result-stat{background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;}
 .result-stat .num{font-size:2rem;font-weight:600;line-height:1;}
-.result-stat .lbl{font-size:.68rem;font-weight:600;color:#6B7499;text-transform:uppercase;letter-spacing:.07em;margin-top:4px;}
-.result-stat.ok .num{color:#1A6B3A;}.result-stat.err .num{color:#8B1A1A;}.result-stat.tot .num{color:#1B2A5E;}
-.tab-row{display:flex;gap:0;border-bottom:1px solid #E2E5ED;margin-bottom:1.25rem;}
-.tab-btn{padding:.65rem 1.1rem;font-size:.8rem;font-weight:600;color:#6B7499;cursor:pointer;border-bottom:3px solid transparent;user-select:none;white-space:nowrap;}
-.tab-btn:hover{color:#1B2A5E;}.tab-btn.on{color:#1B2A5E;border-bottom-color:#8B1A1A;}
-.tab-panel{display:none;}.tab-panel.on{display:block;}
+.result-stat .lbl{font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:4px;}
+.result-stat.ok .num{color:var(--green);}.result-stat.err .num{color:var(--red);}.result-stat.tot .num{color:var(--navy);}
+/* EBAY PENDING */
 .ebay-pending{background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:1rem 1.1rem;font-size:.85rem;color:#3730A3;display:flex;align-items:flex-start;gap:9px;margin-bottom:1rem;}
-.divider{border:none;border-top:1px solid #E2E5ED;margin:1rem 0;}
-.site-footer{background:#1B2A5E;color:rgba(255,255,255,.45);text-align:center;padding:1rem;font-size:.68rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;margin-top:2rem;}
-/* TITLE OPTIMIZER */
-.title-meter{margin-top:6px;}
-.title-bar-wrap{background:#E2E5ED;border-radius:20px;height:6px;overflow:hidden;margin-bottom:3px;}
-.title-bar{height:100%;border-radius:20px;transition:width .2s,background .2s;}
-.title-count{font-size:.72rem;font-weight:600;}
-.title-count.low{color:#A07010;}.title-count.ok{color:#1A6B3A;}.title-count.over{color:#8B1A1A;}
-.title-tip{font-size:.72rem;color:#6B7499;margin-top:2px;line-height:1.4;}
-/* PREVIEW MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:none;align-items:center;justify-content:center;padding:1rem;}
-.modal-overlay.on{display:flex;}
-.modal-box{background:#fff;border-radius:12px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
-.modal-hd{background:#F7F8FA;border-bottom:1px solid #E2E5ED;padding:1rem 1.25rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1;}
-.modal-hd-title{font-size:.9rem;font-weight:700;color:#1B2A5E;}
-.modal-bd{padding:1.25rem;}
-.preview-listing{border:1px solid #E2E5ED;border-radius:8px;overflow:hidden;}
-.preview-photos{display:flex;gap:6px;padding:10px;background:#F7F8FA;border-bottom:1px solid #E2E5ED;flex-wrap:wrap;}
-.preview-photos img{width:80px;height:80px;object-fit:cover;border-radius:5px;border:1px solid #E2E5ED;}
-.no-photo{width:80px;height:80px;background:#E2E5ED;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#6B7499;text-align:center;padding:4px;}
-.preview-info{padding:1rem;}
-.preview-title{font-size:1.05rem;font-weight:600;color:#1B2A5E;margin-bottom:.5rem;line-height:1.3;}
-.preview-price{font-size:1.4rem;font-weight:700;color:#1A6B3A;margin-bottom:.75rem;}
-.preview-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:.75rem;}
-.preview-meta-item{font-size:.8rem;color:#6B7499;}.preview-meta-item span{font-weight:600;color:#1B2A5E;}
-.preview-desc{font-size:.82rem;color:#444;line-height:1.6;white-space:pre-wrap;border-top:1px solid #E2E5ED;padding-top:.75rem;}
-.preview-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.75rem;}
-.preview-badge{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:3px;text-transform:uppercase;}
-.badge-cond{background:#EEF2FF;color:#3730A3;}.badge-auth{background:#EAF5EE;color:#1A6B3A;border:1px solid #A8D8B8;}.badge-variant{background:#FFF8E8;color:#A07010;border:1px solid #E8D080;}
-.char-warn{font-size:.75rem;padding:5px 10px;border-radius:5px;margin-bottom:.75rem;display:inline-block;font-weight:600;}
-.char-warn.ok{background:#EAF5EE;color:#1A6B3A;}.char-warn.low{background:#FFF8E8;color:#A07010;}.char-warn.over{background:#FEE2E2;color:#991B1B;}
+/* FOOTER */
+.site-footer{background:var(--navy);color:rgba(255,255,255,.45);text-align:center;padding:1rem;font-size:.68rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;margin-top:2rem;}
+/* SELECT ALL ROW */
+.select-bar{display:flex;align-items:center;gap:10px;padding:.65rem 1rem;background:var(--off);border:1px solid var(--border);border-radius:8px;margin-bottom:1rem;flex-wrap:wrap;}
+.select-bar label{font-size:.82rem;font-weight:600;color:var(--navy);cursor:pointer;display:flex;align-items:center;gap:7px;}
 /* QUICK LISTING */
 .ql-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media(max-width:640px){.ql-grid{grid-template-columns:1fr;}}
 .ql-full{grid-column:1/-1;}
-.ql-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:1rem;padding-top:1rem;border-top:1px solid #E2E5ED;}
-.dup-warning{background:#FEE2E2;border:1px solid #FECACA;border-radius:6px;padding:.5rem .9rem;font-size:.78rem;color:#991B1B;display:none;margin-top:4px;}
-.dup-warning.show{display:block;}
-.autofill-badge{font-size:.62rem;font-weight:700;background:#EEF2FF;color:#3730A3;border:1px solid #C7D2FE;padding:1px 6px;border-radius:3px;margin-left:5px;text-transform:uppercase;letter-spacing:.05em;vertical-align:middle;}
+.ql-tmpl-btn{padding:7px 16px;border-radius:6px;font-family:'DM Sans',Arial,sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;border:2px solid var(--border);background:#fff;color:var(--muted);transition:all .15s;}
+.ql-tmpl-btn:hover{border-color:var(--navy);color:var(--navy);}
+.ql-tmpl-btn.on{background:var(--navy);color:#fff;border-color:var(--navy);}
+/* PREVIEW MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:none;align-items:center;justify-content:center;padding:1rem;}
+.modal-overlay.on{display:flex;}
+.modal-box{background:#fff;border-radius:12px;width:100%;max-width:660px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal-hd{background:var(--off);border-bottom:1px solid var(--border);padding:1rem 1.25rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1;}
+.modal-hd-title{font-size:.9rem;font-weight:700;color:var(--navy);}
+.modal-bd{padding:1.25rem;}
+.preview-photos{display:flex;gap:6px;padding:10px;background:var(--off);border-bottom:1px solid var(--border);flex-wrap:wrap;border-radius:8px 8px 0 0;}
+.preview-photos img{width:80px;height:80px;object-fit:cover;border-radius:5px;border:1px solid var(--border);}
+.no-photo{width:80px;height:80px;background:var(--border);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--muted);text-align:center;padding:4px;}
+.preview-listing{border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.preview-info{padding:1rem;}
+.preview-title-text{font-size:1.05rem;font-weight:600;color:var(--navy);margin-bottom:.5rem;line-height:1.3;}
+.preview-price{font-size:1.4rem;font-weight:700;color:var(--green);margin-bottom:.75rem;}
+.preview-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:.75rem;font-size:.82rem;}
+.preview-meta-item{color:var(--muted);}.preview-meta-item span{font-weight:600;color:var(--navy);}
+.preview-desc{font-size:.82rem;color:#444;line-height:1.6;white-space:pre-wrap;border-top:1px solid var(--border);padding-top:.75rem;margin-top:.75rem;}
+.preview-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.75rem;}
+.preview-badge{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:3px;text-transform:uppercase;}
+.badge-tmpl{background:#EEF2FF;color:#3730A3;}.badge-excl{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-bd);}.badge-auth{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
 </style>
 </head>
 <body>
@@ -153,7 +170,7 @@ tbody td{padding:9px 12px;color:#1B2A5E;vertical-align:middle;}
   <div class="gate-box">
     <h2>🔒 Admin Access Required</h2>
     <p>This tool is for internal use only.</p>
-    <input type="password" id="pwInput" placeholder="••••" maxlength="10" autocomplete="off">
+    <input type="password" class="gate-input" id="pwInput" placeholder="••••" maxlength="10" autocomplete="off">
     <div class="gate-err" id="pwErr">Incorrect password. Try again.</div>
     <button class="btn btn-red" style="width:100%;" onclick="checkPw()">Enter</button>
   </div>
@@ -164,13 +181,13 @@ tbody td{padding:9px 12px;color:#1B2A5E;vertical-align:middle;}
   <div class="admin-bar">
     <div style="display:flex;align-items:center;gap:10px;">
       <span class="admin-badge">🔒 Admin Mode</span>
-      <span style="font-size:.75rem;color:rgba(255,255,255,.55);">Listing Tool v2.0</span>
+      <span style="font-size:.75rem;color:rgba(255,255,255,.5);">Listing Tool v3.0</span>
     </div>
-    <a class="admin-back" href="index.html">← Back to Inventory Site</a>
+    <a class="admin-back" href="index.html">← Back to Inventory</a>
   </div>
 
   <div class="page-tabs">
-    <div class="page-tab on" data-sec="secBatch" onclick="switchPage(this)">
+    <div class="page-tab on" data-sec="secListings" onclick="switchPage(this)">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       Batch Listings
     </div>
@@ -186,103 +203,68 @@ tbody td{padding:9px 12px;color:#1B2A5E;vertical-align:middle;}
 
   <div class="wrap">
 
-  <!-- BATCH -->
-  <div class="page-section on" id="secBatch">
+  <!-- LISTINGS SECTION -->
+  <div class="page-section on" id="secListings">
+
+    <!-- LOAD -->
     <div class="card">
       <div class="card-hd">
         <span class="card-hd-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Step 1 — Load Listing Sheet
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.2"/></svg>
+          Load &amp; Generate Listings
         </span>
-        <span id="sheetCount" style="font-size:.78rem;color:#6B7499;"></span>
+        <span id="sheetCount" style="font-size:.78rem;color:var(--muted);"></span>
       </div>
       <div class="card-bd">
+        <div class="banner info" style="margin-bottom:1rem;">
+          Fill out your Input Sheet in Google Sheets, then hit Load. The tool reads every row and generates a fully formatted eBay listing for each one using your CTT templates. Edit each listing here, then select and bulk upload when ready.
+        </div>
         <div class="banner hide" id="sheetBanner"></div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
           <button class="btn btn-navy" id="loadBtn" onclick="loadSheet()">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.2"/></svg>
-            Load Sheet
+            Load &amp; Generate
           </button>
-          <span style="font-size:.8rem;color:#6B7499;">Reads all rows from your CTT Listing Sheet</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" id="previewCard" style="display:none;">
-      <div class="card-hd">
-        <span class="card-hd-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          Step 2 — Preview &amp; Validate
-        </span>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-sm btn-outline" onclick="loadPhotos()" id="photoBtn">
+          <button class="btn btn-outline" id="photoBtn" onclick="loadPhotos()" style="display:none;">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             Load Photos
           </button>
-          <button class="btn btn-sm btn-outline" onclick="selectAll()">Select All</button>
-          <button class="btn btn-sm btn-outline" onclick="selectNone()">Deselect All</button>
-        </div>
-      </div>
-      <div class="card-bd">
-        <div class="banner hide" id="photoBanner"></div>
-        <div class="banner warn" id="dupBanner" style="display:none;"></div>
-        <div class="tbl-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th style="width:36px;"><input type="checkbox" id="chkAll" onchange="toggleAll(this)"></th>
-                <th>#</th><th>Title</th><th>Price</th><th>Cond</th><th>Qty</th>
-                <th>Photos</th><th>Drive</th><th>Duplicate</th><th>eBay</th><th>Mercari</th><th>Preview</th>
-              </tr>
-            </thead>
-            <tbody id="previewBody"></tbody>
-          </table>
         </div>
       </div>
     </div>
 
-    <div class="card" id="postCard" style="display:none;">
-      <div class="card-hd">
-        <span class="card-hd-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          Step 3 — Post Listings
-        </span>
+    <!-- LISTING CARDS -->
+    <div id="listingsWrap" style="display:none;">
+
+      <div class="select-bar">
+        <label><input type="checkbox" id="chkSelectAll" onchange="toggleSelectAll(this)"> Select All</label>
+        <span style="font-size:.8rem;color:var(--muted);" id="selCountLabel">0 selected</span>
+        <button class="btn btn-sm btn-outline" onclick="expandAll()">Expand All</button>
+        <button class="btn btn-sm btn-outline" onclick="collapseAll()">Collapse All</button>
+        <div class="banner hide" id="photoBanner" style="margin:0;flex:1;"></div>
       </div>
-      <div class="card-bd">
-        <div class="ebay-pending" id="ebayPendingNotice">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span><strong>eBay posting pending developer approval.</strong> Mercari and Facebook Marketplace exports are fully available now.</span>
+
+      <div class="listing-grid" id="listingGrid"></div>
+
+      <!-- BULK BAR -->
+      <div class="bulk-bar" id="bulkBar">
+        <span class="bulk-bar-count" id="bulkCount">0 listings selected</span>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-left:auto;">
+          <button class="btn btn-outline btn-sm" onclick="exportSelected('mercari')">Export Mercari</button>
+          <button class="btn btn-outline btn-sm" onclick="exportSelected('fb')">Export Facebook</button>
+          <button class="btn btn-red" id="bulkUploadBtn" onclick="bulkUpload()" disabled>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Bulk Upload to eBay
+          </button>
         </div>
-        <div class="tab-row">
-          <div class="tab-btn on" data-panel="panelMercari" onclick="switchTab(this)">Mercari Export</div>
-          <div class="tab-btn" data-panel="panelFB" onclick="switchTab(this)">Facebook Marketplace</div>
-          <div class="tab-btn" data-panel="panelEbay" onclick="switchTab(this)">eBay Post</div>
-        </div>
-        <div class="tab-panel on" id="panelMercari">
-          <div class="banner info" style="margin-bottom:1rem;">Mercari doesn't have a public API — exports are formatted for quick copy-paste. Each takes about 30 seconds to post manually.</div>
-          <div style="display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap;">
-            <button class="btn btn-navy" onclick="generateExports('mercari')">Generate Mercari Exports</button>
-            <button class="btn btn-outline" onclick="copyAllExports('mercari')">Copy All</button>
-          </div>
-          <div id="mercariList" class="export-list"></div>
-        </div>
-        <div class="tab-panel" id="panelFB">
-          <div class="banner info" style="margin-bottom:1rem;">Facebook Marketplace exports are formatted as a table — one per listing. Copy individually or grab them all at once.</div>
-          <div style="display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap;">
-            <button class="btn btn-navy" onclick="generateExports('fb')">Generate FB Exports</button>
-            <button class="btn btn-outline" onclick="copyAllExports('fb')">Copy All</button>
-          </div>
-          <div id="fbList" class="export-list"></div>
-        </div>
-        <div class="tab-panel" id="panelEbay">
-          <div class="banner warn" style="margin-bottom:1rem;">This posts real listings to your live eBay store. Double-check your selections first.</div>
-          <div style="display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap;">
-            <button class="btn btn-red" id="ebayPostBtn" onclick="postToEbay()" disabled>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              Post Selected to eBay
-            </button>
-          </div>
-          <div class="progress-wrap" id="progressWrap" style="display:none;">
+      </div>
+
+      <!-- UPLOAD PROGRESS -->
+      <div class="card" id="uploadCard" style="display:none;margin-top:1rem;">
+        <div class="card-hd"><span class="card-hd-title">Upload Progress</span></div>
+        <div class="card-bd">
+          <div class="progress-wrap">
             <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
             <div class="progress-label" id="progressLabel"></div>
             <div class="log-box" id="logBox"></div>
@@ -296,10 +278,41 @@ tbody td{padding:9px 12px;color:#1B2A5E;vertical-align:middle;}
           </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- QUICK LISTING -->
+    </div>
+  </div><!-- /secListings -->
+
+  <!-- CONFIG SECTION -->
+  <div class="page-section" id="secConfig">
+    <div class="card">
+      <div class="card-hd"><span class="card-hd-title">Configuration</span></div>
+      <div class="card-bd">
+        <div class="ebay-pending" id="ebayPendingNotice">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span><strong>eBay posting pending developer approval.</strong> Everything else is fully functional. Paste your token below once you have it and eBay posting unlocks automatically.</span>
+        </div>
+        <div class="cfg-grid">
+          <div class="field"><label>Input Sheet ID</label><input type="text" id="cfgSheetId" placeholder="Your Google Sheet ID"><span class="field-note">ID from your CTT Listing Input Sheet URL</span></div>
+          <div class="field"><label>Google Drive API Key</label><input type="password" id="cfgDriveKey" placeholder="AIzaSy…"><span class="field-note">For reading Drive photo folders</span></div>
+          <div class="field"><label>imgBB API Key</label><input type="password" id="cfgImgbbKey" placeholder="Your imgBB key"><span class="field-note">Relays photos to eBay</span></div>
+          <div class="field"><label>eBay User Token</label><input type="password" id="cfgEbayToken" placeholder="Pending eBay Developer approval…"><span class="field-note">Unlocks bulk upload when added</span></div>
+        </div>
+        <hr class="divider">
+        <div class="cfg-grid">
+          <div class="field"><label>Default Shipping Policy</label><input type="text" id="cfgShipping" value="Ships within 1-3 business days."></div>
+          <div class="field"><label>Default Return Policy</label><input type="text" id="cfgReturns" value="30 day returns accepted. Buyer pays return shipping."></div>
+          <div class="field"><label>Default eBay Category ID</label><input type="text" id="cfgCatId" value="220"><span class="field-note">220 = Toys &amp; Hobbies → Funko</span></div>
+          <div class="field"><label>Seller Username</label><input type="text" id="cfgSeller" value="captainstreasuretrove"></div>
+        </div>
+        <div style="margin-top:1rem;display:flex;align-items:center;gap:12px;">
+          <button class="btn btn-navy" onclick="saveCfg()">Save Configuration</button>
+          <span id="cfgSaved" style="font-size:.8rem;color:var(--green);display:none;">✓ Saved</span>
+        </div>
+      </div>
+    </div>
+  </div><!-- /secConfig -->
+
+  <!-- QUICK LISTING SECTION -->
   <div class="page-section" id="secQuick">
     <div class="card">
       <div class="card-hd">
@@ -307,47 +320,52 @@ tbody td{padding:9px 12px;color:#1B2A5E;vertical-align:middle;}
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Quick Single Listing
         </span>
+        <button class="btn btn-sm btn-outline" onclick="qlClear()">Clear Form</button>
       </div>
       <div class="card-bd">
-        <div class="banner info" style="margin-bottom:1.25rem;">Fill out the form below for one item. Description auto-fills when you pick a category. Title optimizer shows character count live.</div>
+
+        <!-- TEMPLATE SELECTOR -->
+        <div style="margin-bottom:1.25rem;">
+          <div style="font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem;">Template</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="ql-tmpl-btn on" data-tmpl="Common" onclick="qlSelectTemplate(this)">Common</button>
+            <button class="ql-tmpl-btn" data-tmpl="Exclusive" onclick="qlSelectTemplate(this)">Exclusive</button>
+            <button class="ql-tmpl-btn" data-tmpl="Limited Edition" onclick="qlSelectTemplate(this)">Limited Edition</button>
+            <button class="ql-tmpl-btn" data-tmpl="Signed" onclick="qlSelectTemplate(this)">Signed</button>
+          </div>
+        </div>
+
+        <!-- FIELDS GRID -->
         <div class="ql-grid">
-          <div class="field ql-full">
-            <label>Title <span class="autofill-badge">Optimizer</span></label>
-            <input type="text" id="qlTitle" placeholder="e.g. Sonic the Hedgehog #283 Funko Pop! Games - IN HAND" oninput="updateTitleMeter()" maxlength="80">
-            <div class="title-meter">
-              <div class="title-bar-wrap"><div class="title-bar" id="qlMeterBar" style="width:0%;background:#E2E5ED;"></div></div>
-              <span class="title-count" id="qlMeterCount">0 / 80 characters</span>
-              <div class="title-tip" id="qlMeterTip"></div>
-            </div>
-            <div class="dup-warning" id="qlDupWarn">⚠ A listing with a similar title may already exist in your inventory.</div>
+
+          <!-- ALWAYS SHOWN -->
+          <div class="field">
+            <label>Name</label>
+            <input type="text" id="qlName" placeholder="e.g. Goku" oninput="qlLiveUpdate()">
           </div>
           <div class="field">
-            <label>Category</label>
-            <select id="qlCat" onchange="autoFillDesc()">
-              <option value="">Select…</option>
-              <option value="Funko Pop">Funko Pop</option>
-              <option value="Autograph">Autograph</option>
-              <option value="Chase">Chase</option>
-              <option value="GITD">GITD</option>
-              <option value="Flocked">Flocked</option>
-              <option value="Blacklight">Blacklight</option>
-              <option value="Comic">Comic</option>
-              <option value="Card">Card</option>
-              <option value="Statue">Statue</option>
-              <option value="Other">Other</option>
-            </select>
+            <label># (Pop Number)</label>
+            <input type="text" id="qlNumber" placeholder="e.g. 889" oninput="qlLiveUpdate()">
           </div>
           <div class="field">
-            <label>Line / Series</label>
-            <input type="text" id="qlLine" placeholder="e.g. Games, Movies, Television">
+            <label>Line</label>
+            <input type="text" id="qlLine" placeholder="e.g. Animation, Movies, Television" oninput="qlLiveUpdate()">
+          </div>
+          <div class="field">
+            <label>License</label>
+            <input type="text" id="qlLicense" placeholder="e.g. Dragon Ball Z, WWE, IT" oninput="qlLiveUpdate()">
           </div>
           <div class="field">
             <label>Price ($)</label>
-            <input type="number" id="qlPrice" placeholder="19.99" step="0.01" min="0">
+            <input type="number" id="qlPrice" placeholder="14.99" step="0.01" min="0">
           </div>
           <div class="field">
-            <label>Condition</label>
-            <select id="qlCond">
+            <label>Quantity</label>
+            <input type="number" id="qlQty" value="1" min="1">
+          </div>
+          <div class="field">
+            <label>eBay Condition</label>
+            <select id="qlEbayCond">
               <option value="New">New</option>
               <option value="Like New">Like New</option>
               <option value="Very Good">Very Good</option>
@@ -356,151 +374,187 @@ tbody td{padding:9px 12px;color:#1B2A5E;vertical-align:middle;}
             </select>
           </div>
           <div class="field">
-            <label>Quantity</label>
-            <input type="number" id="qlQty" value="1" min="1">
+            <label>Display Condition</label>
+            <select id="qlDispCond">
+              <option value="Mint">Mint</option>
+              <option value="Near Mint">Near Mint</option>
+              <option value="Very Good">Very Good</option>
+              <option value="Good">Good</option>
+              <option value="Damaged">Damaged</option>
+            </select>
           </div>
-          <div class="field">
-            <label>Exclusive / Variant</label>
-            <input type="text" id="qlVariant" placeholder="e.g. NYCC Exclusive, Hot Topic" oninput="autoFillDesc()">
+
+          <!-- VARIANT FIELDS -->
+          <div class="field ql-variant-field">
+            <label>Variant</label>
+            <input type="text" id="qlVariant" placeholder="e.g. GITD, Flocked, Chase" oninput="qlLiveUpdate()">
           </div>
-          <div class="field">
-            <label>Authentication</label>
-            <input type="text" id="qlAuth" placeholder="e.g. JSA, Beckett, SWAU" oninput="autoFillDesc()">
+          <div class="field ql-variant-field">
+            <label>Exclusive</label>
+            <input type="text" id="qlExclusive" placeholder="e.g. Hot Topic Excl, SDCC Excl" oninput="qlLiveUpdate()">
           </div>
-          <div class="field">
-            <label>SKU / Item #</label>
-            <input type="text" id="qlSku" placeholder="CTT-001">
+
+          <!-- LIMITED FIELDS -->
+          <div class="field ql-limited-field" style="display:none;">
+            <label>Piece Count</label>
+            <input type="text" id="qlPieceCount" placeholder="e.g. 1000" oninput="qlLiveUpdate()">
           </div>
-          <div class="field">
+
+          <!-- SIGNED FIELDS -->
+          <div class="field ql-signed-field" style="display:none;">
+            <label>Signed By</label>
+            <input type="text" id="qlSignedBy" placeholder="e.g. Veronica Taylor" oninput="qlLiveUpdate()">
+          </div>
+          <div class="field ql-signed-field" style="display:none;">
+            <label>Auth Company</label>
+            <input type="text" id="qlAuthCompany" placeholder="e.g. JSA, Beckett, SWAU" oninput="qlLiveUpdate()">
+          </div>
+          <div class="field ql-signed-field" style="display:none;">
+            <label>COA Number</label>
+            <input type="text" id="qlCoaNumber" placeholder="e.g. AB12345" oninput="qlLiveUpdate()">
+          </div>
+
+          <!-- DRIVE -->
+          <div class="field ql-full">
             <label>Google Drive Folder URL</label>
             <input type="text" id="qlDrive" placeholder="https://drive.google.com/drive/folders/…">
           </div>
-          <div class="field ql-full">
-            <label>Description <span class="autofill-badge">Auto-fill</span></label>
-            <textarea id="qlDesc" rows="5" placeholder="Auto-fills when you select a category. Edit freely."></textarea>
+
+        </div><!-- /ql-grid -->
+
+        <div style="margin-top:1.25rem;">
+          <button class="btn btn-navy" onclick="qlGenerate()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Generate Listing
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- GENERATED OUTPUT -->
+    <div id="qlOutputWrap" style="display:none;">
+      <div class="card">
+        <div class="card-hd">
+          <span class="card-hd-title">Generated Listing — Review &amp; Edit</span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-sm btn-outline" onclick="qlOpenPreview()">👁 Preview</button>
+            <button class="btn btn-sm btn-outline" onclick="qlExport('mercari')">Mercari Export</button>
+            <button class="btn btn-sm btn-outline" onclick="qlExport('fb')">Facebook Export</button>
+            <button class="btn btn-red btn-sm" id="qlEbayBtn" onclick="qlPostEbay()" disabled>Post to eBay</button>
           </div>
         </div>
-        <div class="ql-actions">
-          <button class="btn btn-navy" onclick="qlPreview()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            Preview Listing
-          </button>
-          <button class="btn btn-outline" onclick="qlExport('mercari')">Export Mercari</button>
-          <button class="btn btn-outline" onclick="qlExport('fb')">Export Facebook</button>
-          <button class="btn btn-red" id="qlEbayBtn" onclick="qlPostEbay()" disabled>Post to eBay</button>
-          <button class="btn btn-outline btn-sm" onclick="qlClear()" style="margin-left:auto;">Clear</button>
-        </div>
-        <div id="qlExportOut" style="margin-top:1rem;display:none;"></div>
-      </div>
-    </div>
-  </div>
+        <div class="card-bd">
 
-  <!-- CONFIG -->
-  <div class="page-section" id="secConfig">
-    <div class="card">
-      <div class="card-hd">
-        <span class="card-hd-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-          Configuration
-        </span>
-      </div>
-      <div class="card-bd">
-        <div class="cfg-grid">
-          <div class="field"><label>Google Sheets ID</label><input type="text" id="cfgSheetId" value="1DKtGaEApXVp_Ji4H-wNsR34_neYXx6A9"><span class="field-note">ID from your CTT Listing Sheet URL</span></div>
-          <div class="field"><label>Google Drive API Key</label><input type="password" id="cfgDriveKey" placeholder="AIzaSy…"><span class="field-note">For Drive photo access</span></div>
-          <div class="field"><label>imgBB API Key</label><input type="password" id="cfgImgbbKey" placeholder="Your imgBB key"><span class="field-note">Relays Drive photos to eBay</span></div>
-          <div class="field"><label>eBay User Token</label><input type="password" id="cfgEbayToken" placeholder="Pending eBay Developer approval…"><span class="field-note">Unlocks eBay posting when added</span></div>
-        </div>
-        <hr class="divider">
-        <div class="cfg-grid">
-          <div class="field"><label>Default Shipping Policy</label><input type="text" id="cfgShipping" value="Ships within 1 business day. USPS Ground Advantage or Priority Mail."></div>
-          <div class="field"><label>Default Return Policy</label><input type="text" id="cfgReturns" value="30 day returns accepted. Buyer pays return shipping."></div>
-          <div class="field"><label>Default eBay Category ID</label><input type="text" id="cfgCatId" value="220"><span class="field-note">220 = Toys &amp; Hobbies → Funko</span></div>
-          <div class="field"><label>Seller Username</label><input type="text" id="cfgSeller" value="captainstreasuretrove"></div>
-        </div>
-        <div style="margin-top:1rem;">
-          <button class="btn btn-navy" onclick="saveCfg()">Save Configuration</button>
-          <span id="cfgSaved" style="font-size:.8rem;color:#1A6B3A;margin-left:10px;display:none;">✓ Saved</span>
+          <!-- TITLE + METER -->
+          <div class="field" style="margin-bottom:1rem;">
+            <label>eBay Title</label>
+            <input type="text" id="qlOutTitle" oninput="qlUpdateMeter(this.value)">
+            <div class="title-meter" style="margin-top:5px;">
+              <div class="title-bar-wrap"><div class="title-bar" id="qlOutBar" style="width:0%;background:#E2E5ED;"></div></div>
+              <span class="title-count" id="qlOutCount">0 / 80 characters</span>
+              <div class="title-tip" id="qlOutTip"></div>
+            </div>
+            <div id="qlDupWarn" style="display:none;margin-top:5px;" class="banner warn">⚠ A listing with a similar title may already exist in your inventory.</div>
+          </div>
+
+          <!-- DESCRIPTION -->
+          <div class="field" style="margin-bottom:1rem;">
+            <label>Description</label>
+            <textarea id="qlOutDesc" rows="10"></textarea>
+          </div>
+
+          <!-- EXPORT OUTPUT -->
+          <div id="qlExportOut"></div>
+
         </div>
       </div>
     </div>
-  </div>
 
-  </div>
-</div>
+  </div><!-- /secQuick -->
 
-<!-- PREVIEW MODAL -->
-<div class="modal-overlay" id="previewModal">
+  </div><!-- /wrap -->
+</div><!-- /tool -->
+
+<div class="modal-overlay" id="previewModal" onclick="if(event.target===this)closePreview()">
   <div class="modal-box">
     <div class="modal-hd">
-      <span class="modal-hd-title">📦 eBay Listing Preview</span>
-      <button class="btn btn-sm btn-outline" onclick="closeModal()">✕ Close</button>
+      <span class="modal-hd-title">👁 Listing Preview</span>
+      <button class="btn btn-sm btn-outline" onclick="closePreview()">✕ Close</button>
     </div>
-    <div class="modal-bd"><div id="modalContent"></div></div>
+    <div class="modal-bd" id="previewModalContent"></div>
   </div>
 </div>
 
 <footer class="site-footer">⚓ Captain's Treasure Trove — Internal Admin Tool</footer>
 
 <script>
+// ── CONSTANTS ────────────────────────────────────────────────────
 const PASS = '4141';
-const SHEET_NAME = 'Listings';
+const SHEET_NAME = 'Input';
 const INV_SHEET_ID = '1zSd87OlxqrWOzEjPd6TAm4MYn57fhrccdmd4xYwvtXA';
-const COL = {title:0,price:1,cond:2,qty:3,cat:4,line:5,driveUrl:6,desc:7,ebaycat:8,variant:9,auth:10,sku:11,ebayStatus:12,mercariStatus:13};
+
+// Input sheet columns (0-based, row 4 = headers, data starts row 5 = index 0 after skip)
+const COL = {
+  template:0, name:1, number:2, line:3, license:4,
+  price:5, qty:6, ebayCond:7, dispCond:8,
+  variant:9, exclusive:10,
+  pieceCount:11,
+  signedBy:12, authCompany:13, coaNumber:14,
+  driveUrl:15, ebayStatus:16
+};
 
 let listings = [];
 let inventoryTitles = [];
 
-// AUTH
-function checkPw() {
-  if (document.getElementById('pwInput').value === PASS) {
-    document.getElementById('gate').style.display = 'none';
+// ── AUTH ─────────────────────────────────────────────────────────
+function checkPw(){
+  if(document.getElementById('pwInput').value===PASS){
+    document.getElementById('gate').style.display='none';
     document.getElementById('tool').classList.add('on');
     loadCfg(); loadInventoryTitles();
   } else {
     document.getElementById('pwErr').classList.add('show');
-    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').value='';
     document.getElementById('pwInput').focus();
   }
 }
-document.getElementById('pwInput').addEventListener('keydown', function(e){ if(e.key==='Enter') checkPw(); });
+document.getElementById('pwInput').addEventListener('keydown',function(e){ if(e.key==='Enter') checkPw(); });
 
-// CONFIG
-var CFG_KEYS = ['cfgSheetId','cfgDriveKey','cfgImgbbKey','cfgEbayToken','cfgShipping','cfgReturns','cfgCatId','cfgSeller'];
-function saveCfg(){ CFG_KEYS.forEach(function(id){ localStorage.setItem(id,document.getElementById(id).value); }); var s=document.getElementById('cfgSaved'); s.style.display='inline'; setTimeout(function(){ s.style.display='none'; },2000); checkEbayToken(); }
-function loadCfg(){ CFG_KEYS.forEach(function(id){ var v=localStorage.getItem(id); if(v) document.getElementById(id).value=v; }); checkEbayToken(); }
-function checkEbayToken(){ var has=document.getElementById('cfgEbayToken').value.trim().length>10; document.getElementById('ebayPostBtn').disabled=!has; document.getElementById('qlEbayBtn').disabled=!has; document.getElementById('ebayPendingNotice').style.display=has?'none':'flex'; }
+// ── CONFIG ───────────────────────────────────────────────────────
+var CFG=['cfgSheetId','cfgDriveKey','cfgImgbbKey','cfgEbayToken','cfgShipping','cfgReturns','cfgCatId','cfgSeller'];
+function saveCfg(){ CFG.forEach(function(id){ localStorage.setItem(id,document.getElementById(id).value); }); var s=document.getElementById('cfgSaved'); s.style.display='inline'; setTimeout(function(){ s.style.display='none'; },2000); checkEbayToken(); }
+function loadCfg(){ CFG.forEach(function(id){ var v=localStorage.getItem(id); if(v) document.getElementById(id).value=v; }); checkEbayToken(); }
+function checkEbayToken(){ var has=document.getElementById('cfgEbayToken').value.trim().length>10; document.getElementById('bulkUploadBtn').disabled=!has; var qlBtn=document.getElementById('qlEbayBtn'); if(qlBtn) qlBtn.disabled=!has; document.getElementById('ebayPendingNotice').style.display=has?'none':'flex'; }
 function cfg(id){ return document.getElementById(id).value.trim(); }
 
-// PAGE TABS
+// ── PAGE TABS ─────────────────────────────────────────────────────
 function switchPage(btn){ document.querySelectorAll('.page-tab').forEach(function(b){ b.classList.remove('on'); }); document.querySelectorAll('.page-section').forEach(function(s){ s.classList.remove('on'); }); btn.classList.add('on'); document.getElementById(btn.getAttribute('data-sec')).classList.add('on'); }
 
-// EXPORT TABS
-function switchTab(btn){ var cb=btn.closest('.card-bd'); cb.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('on'); }); cb.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('on'); }); btn.classList.add('on'); document.getElementById(btn.getAttribute('data-panel')).classList.add('on'); }
-
-// INVENTORY TITLES for duplicate detection
+// ── INVENTORY TITLES (duplicate detection) ────────────────────────
 function loadInventoryTitles(){
   var url='https://docs.google.com/spreadsheets/d/'+INV_SHEET_ID+'/gviz/tq?tqx=out:json&sheet=Inventory&headers=1';
   var xhr=new XMLHttpRequest(); xhr.open('GET',url);
-  xhr.onload=function(){ try{ var m=xhr.responseText.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/); var json=JSON.parse(m[1]); inventoryTitles=(json.table.rows||[]).map(function(r){ return r.c&&r.c[0]&&r.c[0].v?String(r.c[0].v).toLowerCase().trim():''; }).filter(Boolean); }catch(e){ inventoryTitles=[]; } };
+  xhr.onload=function(){ try{ var m=xhr.responseText.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/); var j=JSON.parse(m[1]); inventoryTitles=(j.table.rows||[]).map(function(r){ return r.c&&r.c[0]&&r.c[0].v?String(r.c[0].v).toLowerCase().trim():''; }).filter(Boolean); }catch(e){ inventoryTitles=[]; } };
   xhr.onerror=function(){ inventoryTitles=[]; };
   xhr.send();
 }
 function isDuplicate(title){
   if(!title||!inventoryTitles.length) return false;
   var t=title.toLowerCase().trim();
-  var tWords=t.split(/\s+/).filter(function(w){ return w.length>3; });
-  if(tWords.length<3) return false;
-  return inventoryTitles.some(function(inv){ var matches=tWords.filter(function(w){ return inv.indexOf(w)!==-1; }); return matches.length>=3&&matches.length/tWords.length>0.5; });
+  var words=t.split(/\s+/).filter(function(w){ return w.length>3; });
+  if(words.length<3) return false;
+  return inventoryTitles.some(function(inv){ var hits=words.filter(function(w){ return inv.indexOf(w)!==-1; }); return hits.length>=3&&hits.length/words.length>0.5; });
 }
 
-// SHEET LOAD
+// ── SHEET LOADING ─────────────────────────────────────────────────
 function loadSheet(){
   var sheetId=cfg('cfgSheetId');
-  if(!sheetId){ showBanner('sheetBanner','err','Enter your Sheet ID in Configuration first.'); return; }
+  if(!sheetId){ showBanner('sheetBanner','err','Enter your Input Sheet ID in Configuration first.'); return; }
   showBanner('sheetBanner','info','Loading sheet…');
   document.getElementById('loadBtn').disabled=true;
-  var url='https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?tqx=out:json&sheet='+encodeURIComponent(SHEET_NAME)+'&headers=1';
+  // headers=3 skips the 3 header rows (title, subtitle, group labels, column labels = rows 1-4, so we use headers=4)
+  var url='https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?tqx=out:json&sheet='+encodeURIComponent(SHEET_NAME)+'&headers=4';
   var xhr=new XMLHttpRequest(); xhr.open('GET',url);
   xhr.onload=function(){
     document.getElementById('loadBtn').disabled=false;
@@ -508,223 +562,439 @@ function loadSheet(){
       var m=xhr.responseText.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
       if(!m) throw new Error('Unexpected response');
       var json=JSON.parse(m[1]);
-      listings=(json.table.rows||[]).map(parseRow).filter(function(l){ return l.title&&l.title.trim()!==''&&!(l.title.indexOf('Sonic the Hedgehog #283')!==-1&&l.sku==='CTT-001'); });
-      if(!listings.length){ showBanner('sheetBanner','warn','No listings found. Add data to your Listings tab rows 5+.'); return; }
-      var dups=listings.filter(function(l){ return isDuplicate(l.title); });
-      if(dups.length){ var d=document.getElementById('dupBanner'); d.style.display='flex'; d.textContent='⚠ '+dups.length+' listing(s) may already exist in your inventory: '+dups.map(function(x){ return '"'+x.title.substring(0,35)+'…"'; }).join(', '); }
-      showBanner('sheetBanner','ok','✓ Loaded '+listings.length+' listing'+(listings.length!==1?'s':'')+'.');
-      document.getElementById('sheetCount').textContent=listings.length+' rows';
-      renderPreview();
-      document.getElementById('previewCard').style.display='block';
-      document.getElementById('postCard').style.display='block';
-    }catch(e){ showBanner('sheetBanner','err','Parse error: '+e.message+'. Make sure sheet is public.'); }
+      var rows=json.table.rows||[];
+      // Filter out example rows (italic/gray) by checking if template is a known value
+      var validTemplates=['common','exclusive','limited edition','signed'];
+      listings=rows.map(parseRow).filter(function(l){
+        return l.name&&l.name.trim()!==''&&validTemplates.indexOf(l.template.toLowerCase())!==-1;
+      });
+      if(!listings.length){ showBanner('sheetBanner','warn','No listings found. Make sure your Input sheet has data starting at row 9.'); return; }
+      // Generate all listings
+      listings.forEach(function(l){ generateListing(l); });
+      showBanner('sheetBanner','ok','✓ Generated '+listings.length+' listing'+(listings.length!==1?'s':'')+'.');
+      document.getElementById('sheetCount').textContent=listings.length+' listings';
+      document.getElementById('photoBtn').style.display='inline-flex';
+      renderListings();
+      document.getElementById('listingsWrap').style.display='block';
+      updateBulkCount();
+    }catch(e){ showBanner('sheetBanner','err','Parse error: '+e.message+'. Make sure sheet is set to public.'); }
   };
   xhr.onerror=function(){ document.getElementById('loadBtn').disabled=false; showBanner('sheetBanner','err','Network error.'); };
   xhr.send();
 }
+
 function parseRow(r){
   function cell(i){ if(!r.c||i>=r.c.length||!r.c[i]) return ''; var c=r.c[i]; if(c.f!=null&&c.f!=='') return String(c.f); if(c.v!=null) return String(c.v); return ''; }
   var du=cell(COL.driveUrl).trim();
-  return {title:cell(COL.title).trim(),price:cell(COL.price).trim(),cond:cell(COL.cond).trim(),qty:cell(COL.qty).trim()||'1',cat:cell(COL.cat).trim(),line:cell(COL.line).trim(),driveUrl:du,desc:cell(COL.desc).trim(),ebaycat:cell(COL.ebaycat).trim(),variant:cell(COL.variant).trim(),auth:cell(COL.auth).trim(),sku:cell(COL.sku).trim(),ebayStatus:cell(COL.ebayStatus).trim(),mercariStatus:cell(COL.mercariStatus).trim(),photos:[],selected:true,driveId:parseDriveId(du)};
+  return {
+    template:   cell(COL.template).trim(),
+    name:       cell(COL.name).trim(),
+    number:     cell(COL.number).trim(),
+    line:       cell(COL.line).trim(),
+    license:    cell(COL.license).trim(),
+    price:      cell(COL.price).trim(),
+    qty:        cell(COL.qty).trim()||'1',
+    ebayCond:   cell(COL.ebayCond).trim()||'New',
+    dispCond:   cell(COL.dispCond).trim()||'Mint',
+    variant:    cell(COL.variant).trim(),
+    exclusive:  cell(COL.exclusive).trim(),
+    pieceCount: cell(COL.pieceCount).trim(),
+    signedBy:   cell(COL.signedBy).trim(),
+    authCompany:cell(COL.authCompany).trim(),
+    coaNumber:  cell(COL.coaNumber).trim(),
+    driveUrl:   du,
+    driveId:    parseDriveId(du),
+    photos:     [],
+    selected:   true,
+    expanded:   true,
+    // Generated fields (filled by generateListing)
+    genTitle:   '',
+    genDesc:    '',
+    ebayStatus: cell(COL.ebayStatus).trim()
+  };
 }
 function parseDriveId(url){ if(!url) return ''; var m=url.match(/\/folders\/([a-zA-Z0-9_-]+)/); return m?m[1]:''; }
 
-// PREVIEW TABLE
-function renderPreview(){
-  document.getElementById('previewBody').innerHTML=listings.map(function(l,i){
-    var missing=!l.title||!l.price||!l.driveId;
-    var sPill=missing?'<span class="status-pill pill-missing">Missing</span>':'<span class="status-pill pill-ready">Ready</span>';
-    if(l.ebayStatus==='Posted') sPill='<span class="status-pill pill-posted">Posted</span>';
-    if(l.ebayStatus&&l.ebayStatus.indexOf('Error')!==-1) sPill='<span class="status-pill pill-error">Error</span>';
-    var mPill=l.mercariStatus?'<span class="status-pill pill-posted">'+esc(l.mercariStatus)+'</span>':'<span class="status-pill pill-pending">—</span>';
-    var dPill=isDuplicate(l.title)?'<span class="status-pill pill-dup">Possible dup</span>':'<span class="status-pill pill-ready">Clear</span>';
-    var photoHtml=l.photos&&l.photos.length?'<div class="photo-thumb">'+l.photos.slice(0,3).map(function(p){ return '<img src="'+esc(p.url)+'" alt="">'; }).join('')+(l.photos.length>3?'<span class="photo-count">+'+(l.photos.length-3)+'</span>':'')+'</div>':(l.driveId?'<span class="photo-count" style="color:#A07010;">Load photos</span>':'<span class="photo-count" style="color:#8B1A1A;">No folder</span>');
-    var driveHtml=l.driveId?'<a href="'+esc(l.driveUrl)+'" target="_blank" style="font-size:.75rem;color:#1A6B3A;">📁 View</a>':'<span style="font-size:.75rem;color:#8B1A1A;">Not set</span>';
-    return '<tr>'
-      +'<td><input type="checkbox"'+(l.selected?' checked':'')+'onchange="toggleRow('+i+',this)"></td>'
-      +'<td class="td-mute">'+(i+1)+'</td>'
-      +'<td class="td-title"><span title="'+esc(l.title)+'">'+esc(l.title||'—')+'</span>'+(l.auth?'<br><span style="font-size:.7rem;color:#1A6B3A;">🔏 '+esc(l.auth)+'</span>':'')+'</td>'
-      +'<td style="color:#1A6B3A;font-weight:600;white-space:nowrap;">'+(l.price?'$'+esc(l.price):'—')+'</td>'
-      +'<td class="td-mute">'+esc(l.cond||'—')+'</td>'
-      +'<td class="td-mute">'+esc(l.qty)+'</td>'
-      +'<td>'+photoHtml+'</td>'
-      +'<td>'+driveHtml+'</td>'
-      +'<td>'+dPill+'</td>'
-      +'<td>'+sPill+'</td>'
-      +'<td>'+mPill+'</td>'
-      +'<td><button class="btn btn-sm btn-outline" onclick="openPreviewModal('+i+')">👁 Preview</button></td>'
-      +'</tr>';
-  }).join('');
+// ── TITLE & DESCRIPTION GENERATORS ───────────────────────────────
+function generateListing(l){
+  var t=l.template.toLowerCase();
+  if(t==='common')          { l.genTitle=buildTitleCommon(l);    l.genDesc=buildDescCommon(l); }
+  else if(t==='exclusive')  { l.genTitle=buildTitleExclusive(l); l.genDesc=buildDescExclusive(l); }
+  else if(t==='limited edition'){ l.genTitle=buildTitleLimited(l); l.genDesc=buildDescLimited(l); }
+  else if(t==='signed')     { l.genTitle=buildTitleSigned(l);    l.genDesc=buildDescSigned(l); }
+  else                      { l.genTitle=buildTitleCommon(l);    l.genDesc=buildDescCommon(l); }
 }
-function toggleRow(idx,cb){ listings[idx].selected=cb.checked; }
-function toggleAll(cb){ listings.forEach(function(l){ l.selected=cb.checked; }); renderPreview(); }
-function selectAll(){ listings.forEach(function(l){ l.selected=true; }); renderPreview(); }
-function selectNone(){ listings.forEach(function(l){ l.selected=false; }); renderPreview(); }
 
-// PHOTOS
+// Common: Funko Pop! [Line] [License]: [Name] [Variant (if any)] [#]
+function buildTitleCommon(l){
+  var parts=['Funko Pop!',l.line,l.license+':',l.name];
+  if(l.variant) parts.push(l.variant);
+  if(l.number)  parts.push('#'+l.number);
+  return parts.filter(Boolean).join(' ');
+}
+// Exclusive: Funko Pop! [Line] [License]: [Name] [Variant] [Exclusive] Excl [#]
+function buildTitleExclusive(l){
+  var parts=['Funko Pop!',l.line,l.license+':',l.name];
+  if(l.variant)   parts.push(l.variant);
+  if(l.exclusive) parts.push(l.exclusive+' Excl');
+  if(l.number)    parts.push('#'+l.number);
+  return parts.filter(Boolean).join(' ');
+}
+// Limited: Funko Pop! [Line] [License]: [Name] [Variant] [Exclusive] Excl [#] [PC]pcs
+function buildTitleLimited(l){
+  var parts=['Funko Pop!',l.line,l.license+':',l.name];
+  if(l.variant)    parts.push(l.variant);
+  if(l.exclusive)  parts.push(l.exclusive+' Excl');
+  if(l.number)     parts.push('#'+l.number);
+  if(l.pieceCount) parts.push(l.pieceCount+'pcs');
+  return parts.filter(Boolean).join(' ');
+}
+// Signed: SIGNED Funko Pop! [Line] [License]: [Name] [#] - [Signed by] [Auth] COA
+function buildTitleSigned(l){
+  var parts=['SIGNED Funko Pop!',l.line,l.license+':',l.name];
+  if(l.number) parts.push('#'+l.number);
+  var sig=[];
+  if(l.signedBy)    sig.push(l.signedBy);
+  if(l.authCompany) sig.push(l.authCompany);
+  sig.push('COA');
+  return parts.filter(Boolean).join(' ')+' - '+sig.join(' ');
+}
+
+// DESCRIPTIONS
+function buildDescCommon(l){
+  var dc=l.dispCond||l.ebayCond||'Mint';
+  return 'Add this Funko Pop! '+l.line+' '+l.license+': '+l.name+(l.variant?' '+l.variant:'')+(l.number?' #'+l.number:'')+' to your collection!\n\n'
+    +'This pop is packed carefully to ensure safe delivery. We ship within 1-3 business days.\n\n'
+    +'Item details:\n'
+    +'- Character: '+l.name+(l.number?' #'+l.number:'')+'\n'
+    +'- Line & License: '+l.line+' - '+l.license+'\n'
+    +(l.variant?'- Variant: '+l.variant+'\n':'')
+    +'- Condition: '+dc+' (See photos, Feel free to message us for additional photos!)\n\n'
+    +'A must have for any '+l.line+' fan or '+l.license+' collector!\n\n'
+    +'Any questions? Message us and we\'ll get back to you ASAP!';
+}
+function buildDescExclusive(l){
+  var dc=l.dispCond||l.ebayCond||'Mint';
+  return 'Add this Funko Pop! '+l.line+' '+l.license+': '+l.name+(l.variant?' '+l.variant:'')+(l.number?' #'+l.number:'')+' to your collection!\n\n'
+    +'This pop is packed carefully to ensure safe delivery. We ship within 1-3 business days.\n\n'
+    +'Item details:\n'
+    +'- Character: '+l.name+(l.number?' #'+l.number:'')+'\n'
+    +'- Line & License: '+l.line+' - '+l.license+'\n'
+    +(l.variant?'- Variant: '+l.variant+'\n':'')
+    +(l.exclusive?'- Exclusive: '+l.exclusive+' Excl\n':'')
+    +'\n- Condition: '+dc+' (See photos, Feel free to message us for additional photos!)\n\n'
+    +'A must have for any '+l.line+' fan or '+l.license+' collector!\n\n'
+    +'Any questions? Message us and we\'ll get back to you ASAP!';
+}
+function buildDescLimited(l){
+  var dc=l.dispCond||l.ebayCond||'Mint';
+  return 'Add this Rare Funko Pop! '+l.line+' '+l.license+': '+l.name+(l.variant?' '+l.variant:'')+(l.exclusive?' '+l.exclusive+' Excl':'')+(l.number?' #'+l.number:'')+(l.pieceCount?', limited to '+l.pieceCount:'')+', to your collection!\n\n'
+    +'This pop is shipped in pictured protector, and it is packed carefully to ensure safe delivery. We ship within 1-3 business days.\n\n'
+    +'Item details:\n'
+    +'- Character: '+l.name+(l.number?' #'+l.number:'')+'\n'
+    +'- Line & License: '+l.line+' - '+l.license+'\n'
+    +(l.variant?'- Variant: '+l.variant+'\n':'')
+    +(l.exclusive?'- Exclusive: '+l.exclusive+' Excl\n':'')
+    +(l.pieceCount?'- Limited to '+l.pieceCount+'pcs\n':'')
+    +'- Condition: '+dc+' (See photos, Feel free to message us for additional photos!)\n\n'
+    +'A must have for any '+l.license+' fan or limited edition collector!\n\n'
+    +'Any questions? Message us and we\'ll get back to you ASAP!';
+}
+function buildDescSigned(l){
+  var dc=l.dispCond||l.ebayCond||'Mint';
+  return 'Add this Funko Pop! '+l.line+' '+l.license+': '+l.name+(l.number?' #'+l.number:'')+', signed by '+l.signedBy+(l.authCompany?', with COA from '+l.authCompany:'')+', to your collection!\n\n'
+    +'This signed pop ships in a standard Popshield Soft Protector, and is packed carefully to ensure safe delivery.\n\n'
+    +'Item details:\n'
+    +'- Character: '+l.name+'\n'
+    +'- Signed by: '+l.signedBy+'\n'
+    +(l.authCompany?'- Authentication: '+l.authCompany+'\n':'')
+    +(l.coaNumber?'- COA #: '+l.coaNumber+'\n':'')
+    +(l.variant||l.exclusive?'- Variant: '+(l.variant||'')+(l.exclusive?' '+l.exclusive+' Excl':'')+'\n':'')
+    +'- Condition: '+dc+' (See photos, Feel free to message us for additional photos!)\n\n'
+    +'A must have for any '+l.license+' fan or autograph collector!\n\n'
+    +'Any questions? Message us and we\'ll get back to you ASAP!';
+}
+
+// ── RENDER LISTING CARDS ──────────────────────────────────────────
+function renderListings(){
+  var grid=document.getElementById('listingGrid');
+  grid.innerHTML=listings.map(function(l,i){ return renderCard(l,i); }).join('');
+}
+
+function tmplClass(t){
+  t=t.toLowerCase();
+  if(t==='exclusive') return 'tmpl-variant';
+  if(t==='limited edition') return 'tmpl-limited';
+  if(t==='signed') return 'tmpl-signed';
+  return 'tmpl-common';
+}
+
+function renderCard(l,i){
+  var titleLen=l.genTitle.length;
+  var dupFlag=isDuplicate(l.genTitle);
+  var cardClass='listing-card'+(l.selected?' selected':'')+(dupFlag?' has-issues':'');
+  var tmplCls=tmplClass(l.template);
+  var meterColor=titleLen===0?'#E2E5ED':titleLen<=60||titleLen>80?'#8B1A1A':'#E2E5ED';
+  var meterPct=Math.min(100,(titleLen/80)*100);
+  var countCls=titleLen===0?'':titleLen<=60||titleLen>80?'low':'ok';
+  var countTxt=titleLen===0?'0 / 80 characters':titleLen<=60?titleLen+' / 80 — Too short':titleLen>80?titleLen+' / 80 — Over limit! Trim '+(titleLen-80)+' character'+(titleLen-80!==1?'s':''):titleLen+' / 80';
+  var tipTxt=titleLen>0&&titleLen<=60?'💡 Add variant, exclusive info, or "- IN HAND" to fill out the title.':'';
+  var dupHtml=dupFlag?'<span class="issue-flag flag-dup">⚠ Possible duplicate</span>':'';
+  var shortHtml=titleLen<=60&&titleLen>0?'<span class="issue-flag flag-short">Title too short</span>':'';
+  var okHtml=!dupFlag&&titleLen>60&&titleLen<=80?'<span class="issue-flag flag-ok">✓ Ready</span>':'';
+  var statusHtml=l.ebayStatus==='Posted'?'<span class="issue-flag" style="background:#DBEAFE;color:#1E40AF;border:1px solid #BFDBFE;">Posted</span>':'';
+  var photosHtml=l.photos&&l.photos.length
+    ? l.photos.slice(0,4).map(function(p){ return '<img src="'+esc(p.url)+'" style="width:48px;height:48px;object-fit:cover;border-radius:5px;border:1px solid var(--border);" alt="">'; }).join('')+(l.photos.length>4?'<span style="font-size:.72rem;color:var(--muted);align-self:center;">+'+( l.photos.length-4)+'</span>':'')
+    : (l.driveId?'<span style="font-size:.78rem;color:var(--gold);">📁 Folder linked — click Load Photos</span>':'<span style="font-size:.78rem;color:var(--muted);">No Drive folder set</span>');
+
+  return '<div class="'+cardClass+'" id="lcard_'+i+'">'
+
+    // HEADER
+    +'<div class="lcard-hd">'
+    +'<input type="checkbox" class="lcard-chk" id="lchk_'+i+'"'+(l.selected?' checked':'')+'onchange="toggleCard('+i+',this)">'
+    +'<span class="lcard-num">'+(i+1)+'</span>'
+    +'<span class="lcard-tmpl '+tmplCls+'">'+esc(l.template)+'</span>'
+    +'<span class="lcard-name">'+esc(l.name)+(l.number?' #'+esc(l.number):'')+'</span>'
+    +'<span class="lcard-price">'+(l.price?'$'+esc(l.price):'')+'</span>'
+    +statusHtml
+    +'<div class="lcard-actions">'
+    +'<button class="btn btn-sm btn-outline" onclick="toggleExpand('+i+')">'+( l.expanded?'▲ Collapse':'▼ Expand')+'</button>'
+    +'</div>'
+    +'</div>'
+
+    // BODY
+    +'<div id="lbody_'+i+'"style="display:'+(l.expanded?'block':'none')+';">'
+    +'<div class="lcard-body">'
+
+    // FLAGS
+    +'<div class="flags-row">'+dupHtml+shortHtml+okHtml+'</div>'
+
+    // FIELDS
+    +'<div class="lcard-fields">'
+
+    // Title
+    +'<div class="field lcard-full">'
+    +'<label>eBay Title</label>'
+    +'<input type="text" id="ltitle_'+i+'" value="'+esc(l.genTitle)+'" oninput="onTitleInput('+i+',this.value)">'
+    +'<div class="title-meter">'
+    +'<div class="title-bar-wrap"><div class="title-bar" id="lbar_'+i+'" style="width:'+meterPct+'%;background:'+meterColor+';"></div></div>'
+    +'<span class="title-count '+countCls+'" id="lcount_'+i+'">'+countTxt+'</span>'
+    +'<div class="title-tip" id="ltip_'+i+'">'+tipTxt+'</div>'
+    +'</div>'
+    +'</div>'
+
+    // Description
+    +'<div class="field lcard-full">'
+    +'<label>Description</label>'
+    +'<textarea id="ldesc_'+i+'" rows="8" oninput="listings['+i+'].genDesc=this.value">'+esc(l.genDesc)+'</textarea>'
+    +'</div>'
+
+    // Price + Qty + Condition
+    +'<div class="field">'
+    +'<label>Price ($)</label>'
+    +'<input type="text" id="lprice_'+i+'" value="'+esc(l.price)+'" oninput="listings['+i+'].price=this.value">'
+    +'</div>'
+    +'<div class="field">'
+    +'<label>Quantity</label>'
+    +'<input type="text" id="lqty_'+i+'" value="'+esc(l.qty)+'" oninput="listings['+i+'].qty=this.value">'
+    +'</div>'
+
+    // Photos
+    +'<div class="field lcard-full">'
+    +'<label>Photos</label>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">'+photosHtml+'</div>'
+    +'</div>'
+
+    +'</div>'// /lcard-fields
+
+    // EXPORT BUTTONS
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:.5rem;">'
+    +'<button class="btn btn-sm btn-outline" onclick="openPreview('+i+')">👁 Preview</button>'
+    +'<button class="btn btn-sm btn-outline" onclick="showExport('+i+',\'mercari\')">Mercari Export</button>'
+    +'<button class="btn btn-sm btn-outline" onclick="showExport('+i+',\'fb\')">Facebook Export</button>'
+    +'</div>'
+    +'<div id="lexport_'+i+'"></div>'
+
+    +'</div>'// /lcard-body
+    +'</div>'// /lbody
+
+    +'</div>';// /listing-card
+}
+
+// ── CARD INTERACTIONS ─────────────────────────────────────────────
+function toggleCard(i,cb){
+  listings[i].selected=cb.checked;
+  var card=document.getElementById('lcard_'+i);
+  if(cb.checked) card.classList.add('selected'); else card.classList.remove('selected');
+  updateBulkCount();
+}
+function toggleExpand(i){
+  listings[i].expanded=!listings[i].expanded;
+  var body=document.getElementById('lbody_'+i);
+  body.style.display=listings[i].expanded?'block':'none';
+  // Update button text without full re-render
+  var btns=document.getElementById('lcard_'+i).querySelectorAll('.lcard-actions button');
+  if(btns.length) btns[0].textContent=listings[i].expanded?'▲ Collapse':'▼ Expand';
+}
+function expandAll(){ listings.forEach(function(l,i){ l.expanded=true; var b=document.getElementById('lbody_'+i); if(b) b.style.display='block'; }); }
+function collapseAll(){ listings.forEach(function(l,i){ l.expanded=false; var b=document.getElementById('lbody_'+i); if(b) b.style.display='none'; }); }
+function toggleSelectAll(cb){ listings.forEach(function(l,i){ l.selected=cb.checked; var c=document.getElementById('lchk_'+i); if(c) c.checked=cb.checked; var card=document.getElementById('lcard_'+i); if(card){ if(cb.checked) card.classList.add('selected'); else card.classList.remove('selected'); } }); updateBulkCount(); }
+function updateBulkCount(){ var n=listings.filter(function(l){ return l.selected; }).length; document.getElementById('bulkCount').textContent=n+' listing'+(n!==1?'s':'')+' selected'; document.getElementById('selCountLabel').textContent=n+' selected'; }
+
+// ── TITLE INPUT HANDLER ───────────────────────────────────────────
+function onTitleInput(i,val){
+  listings[i].genTitle=val;
+  var len=val.length;
+  var bar=document.getElementById('lbar_'+i);
+  var count=document.getElementById('lcount_'+i);
+  var tip=document.getElementById('ltip_'+i);
+  var flags=document.getElementById('lcard_'+i).querySelector('.flags-row');
+  bar.style.width=Math.min(100,(len/80)*100)+'%';
+  if(len===0){ bar.style.background='#E2E5ED'; count.className='title-count'; count.textContent='0 / 80 characters'; tip.textContent=''; }
+  else if(len<=60){ bar.style.background='#8B1A1A'; count.className='title-count low'; count.textContent=len+' / 80 — Too short'; tip.textContent='💡 Add variant, exclusive, or "- IN HAND" to fill out.'; }
+  else if(len<=80){ bar.style.background='#E2E5ED'; count.className='title-count ok'; count.textContent=len+' / 80'; tip.textContent=''; }
+  else{ bar.style.background='#8B1A1A'; count.className='title-count low'; count.textContent=len+' / 80 — Over limit! Trim '+(len-80)+' character'+(len-80!==1?'s':''); tip.textContent=''; }
+  // Update flags
+  var dup=isDuplicate(val);
+  var short=len>0&&len<=60;
+  var ok=!dup&&len>60&&len<=80;
+  var posted=listings[i].ebayStatus==='Posted';
+  flags.innerHTML=(dup?'<span class="issue-flag flag-dup">⚠ Possible duplicate</span>':'')
+    +(short?'<span class="issue-flag flag-short">Title too short</span>':'')
+    +(ok?'<span class="issue-flag flag-ok">✓ Ready</span>':'')
+    +(posted?'<span class="issue-flag" style="background:#DBEAFE;color:#1E40AF;border:1px solid #BFDBFE;">Posted</span>':'');
+  // Update card border
+  var card=document.getElementById('lcard_'+i);
+  if(dup) card.classList.add('has-issues'); else card.classList.remove('has-issues');
+}
+
+// ── PHOTOS ────────────────────────────────────────────────────────
 function loadPhotos(){
   var apiKey=cfg('cfgDriveKey');
-  if(!apiKey){ showBanner('photoBanner','warn','Enter your Google Drive API Key in Configuration first.'); return; }
+  if(!apiKey){ showBanner('sheetBanner','warn','Enter your Google Drive API Key in Configuration first.'); return; }
   var toLoad=listings.filter(function(l){ return l.driveId; });
-  if(!toLoad.length){ showBanner('photoBanner','warn','No Drive folder URLs found.'); return; }
+  if(!toLoad.length){ showBanner('sheetBanner','warn','No Drive folder URLs found in your sheet.'); return; }
   showBanner('photoBanner','info','Loading photos…');
+  document.getElementById('photoBanner').style.display='flex';
   document.getElementById('photoBtn').disabled=true;
   var done=0;
-  function next(i){ if(i>=toLoad.length){ document.getElementById('photoBtn').disabled=false; var loaded=listings.filter(function(l){ return l.photos&&l.photos.length; }).length; showBanner('photoBanner','ok','✓ Photos loaded for '+loaded+' listing'+(loaded!==1?'s':'')+'.');renderPreview();return; } fetchDriveFolder(toLoad[i].driveId,apiKey,function(photos){ toLoad[i].photos=photos||[]; done++; document.getElementById('photoBanner').textContent='Loading photos… '+done+' / '+toLoad.length; next(i+1); }); }
+  function next(i){
+    if(i>=toLoad.length){
+      document.getElementById('photoBtn').disabled=false;
+      var loaded=listings.filter(function(l){ return l.photos&&l.photos.length; }).length;
+      showBanner('photoBanner','ok','✓ Photos loaded for '+loaded+' listing'+(loaded!==1?'s':'')+'.');
+      renderListings(); return;
+    }
+    fetchDriveFolder(toLoad[i].driveId,apiKey,function(photos){
+      toLoad[i].photos=photos||[]; done++;
+      document.getElementById('photoBanner').textContent='Loading photos… '+done+' / '+toLoad.length;
+      next(i+1);
+    });
+  }
   next(0);
 }
 function fetchDriveFolder(folderId,apiKey,cb){
   var url='https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent("'"+folderId+"' in parents and mimeType contains 'image/' and trashed=false")+'&fields=files(id,name,mimeType)&orderBy=name&key='+encodeURIComponent(apiKey)+'&pageSize=20';
   var xhr=new XMLHttpRequest(); xhr.open('GET',url);
-  xhr.onload=function(){ try{ var data=JSON.parse(xhr.responseText); cb((data.files||[]).map(function(f){ return {id:f.id,name:f.name,url:'https://drive.google.com/thumbnail?id='+f.id+'&sz=w800'}; })); }catch(e){ cb([]); } };
+  xhr.onload=function(){ try{ var d=JSON.parse(xhr.responseText); cb((d.files||[]).map(function(f){ return {id:f.id,name:f.name,url:'https://drive.google.com/thumbnail?id='+f.id+'&sz=w800'}; })); }catch(e){ cb([]); } };
   xhr.onerror=function(){ cb([]); };
   xhr.send();
 }
 
-// TITLE OPTIMIZER
-function updateTitleMeter(){
-  var val=document.getElementById('qlTitle').value;
-  var len=val.length;
-  var bar=document.getElementById('qlMeterBar');
-  var count=document.getElementById('qlMeterCount');
-  var tip=document.getElementById('qlMeterTip');
-  bar.style.width=Math.min(100,(len/80)*100)+'%';
-  if(len===0){ bar.style.background='#E2E5ED'; count.className='title-count'; count.textContent='0 / 80 characters'; tip.textContent=''; }
-  else if(len<=60){ bar.style.background='#8B1A1A'; count.className='title-count low'; count.textContent=len+' / 80 — Too short'; tip.textContent='💡 Add: character name, Pop #, line, variant, and "- IN HAND - SHIPS FAST!"'; }
-  else if(len<=79){ bar.style.background='#1A6B3A'; count.className='title-count ok'; count.textContent=len+' / 80 — Good ✓'; tip.textContent='💡 '+(80-len)+' character'+(80-len!==1?'s':'')+' left — consider adding more detail or "- SHIPS FAST!"'; }
-  else if(len===80){ bar.style.background='#1B2A5E'; count.className='title-count ok'; count.textContent='80 / 80 — Fully optimized ✓'; tip.textContent=''; }
-  else{ bar.style.background='#8B1A1A'; count.className='title-count over'; count.textContent=len+' / 80 — Over limit! Trim '+(len-80)+' character'+(len-80!==1?'s':''); tip.textContent=''; }
-  var dupWarn=document.getElementById('qlDupWarn');
-  if(len>10&&isDuplicate(val)) dupWarn.classList.add('show'); else dupWarn.classList.remove('show');
-}
-
-// AUTO-FILL DESCRIPTIONS
-var DESC_TEMPLATES={
-  'Funko Pop':function(l){ return (l.title||'This Funko Pop')+'.\n\n'+(l.line?'Line: Funko Pop! '+l.line+'\n':'')+(l.variant?'Variant: '+l.variant+'\n':'')+'\nCondition: '+(l.cond||'New')+'. Stored in a smoke-free, pet-free environment. Ships in a secure box with bubble wrap protection.\n\n⚓ Captain\'s Treasure Trove — Your New Jersey source for Funko Pops, exclusives, chases, and more. IN HAND and ships fast!'; },
-  'Autograph':function(l){ return (l.title||'Autographed item')+'.\n\n'+(l.auth?'🔏 Authentication: '+l.auth+'\n':'')+(l.variant?'Notes: '+l.variant+'\n':'')+'\nPersonally signed collectible'+(l.auth?' with '+l.auth+' authentication':'')+'. Condition: '+(l.cond||'New')+'.\n\nShips securely packed to protect the signature.\n\n⚓ Captain\'s Treasure Trove — Specializing in authenticated autographs and signed collectibles.'; },
-  'Chase':function(l){ return (l.title||'Chase Funko Pop')+'.\n\n'+(l.line?'Line: Funko Pop! '+l.line+'\n':'')+'\n🎲 CHASE variant — rarer than the standard release and highly sought after by collectors.\n\nCondition: '+(l.cond||'New')+'. Ships in a secure box with bubble wrap protection.\n\n⚓ Captain\'s Treasure Trove — Chases, exclusives, and hard-to-find Funko Pops. IN HAND and ships fast!'; },
-  'GITD':function(l){ return (l.title||'GITD Funko Pop')+'.\n\n'+(l.line?'Line: Funko Pop! '+l.line+'\n':'')+(l.variant?'Exclusive: '+l.variant+'\n':'')+'\n✨ Glow in the Dark (GITD) variant. Charges quickly under light and glows bright.\n\nCondition: '+(l.cond||'New')+'. Ships in a secure box with bubble wrap protection.\n\n⚓ Captain\'s Treasure Trove — Exclusive and specialty Funko Pops. IN HAND and ships fast!'; },
-  'Flocked':function(l){ return (l.title||'Flocked Funko Pop')+'.\n\n'+(l.line?'Line: Funko Pop! '+l.line+'\n':'')+(l.variant?'Exclusive: '+l.variant+'\n':'')+'\n🧸 FLOCKED variant — features a soft, velvety texture.\n\nCondition: '+(l.cond||'New')+'. Ships in a secure box with bubble wrap protection.\n\n⚓ Captain\'s Treasure Trove — Specialty Funko Pops. IN HAND and ships fast!'; },
-  'Blacklight':function(l){ return (l.title||'Blacklight Funko Pop')+'.\n\n'+(l.line?'Line: Funko Pop! '+l.line+'\n':'')+(l.variant?'Exclusive: '+l.variant+'\n':'')+'\n🌟 BLACKLIGHT variant — glows under UV/blacklight. Stunning display piece.\n\nCondition: '+(l.cond||'New')+'. Ships in a secure box with bubble wrap protection.\n\n⚓ Captain\'s Treasure Trove — Specialty Funko Pops. IN HAND and ships fast!'; }
-};
-function buildDesc(l){ var tmpl=DESC_TEMPLATES[l.cat]||DESC_TEMPLATES['Funko Pop']; return tmpl(l); }
-function autoFillDesc(){ var cat=document.getElementById('qlCat').value; var l={title:document.getElementById('qlTitle').value,line:document.getElementById('qlLine').value,variant:document.getElementById('qlVariant').value,auth:document.getElementById('qlAuth').value,cond:document.getElementById('qlCond').value}; if(cat){ var tmpl=DESC_TEMPLATES[cat]||DESC_TEMPLATES['Funko Pop']; document.getElementById('qlDesc').value=tmpl(l); } }
-
-// MODAL
-function openPreviewModal(idx){ renderModal(listings[idx]); document.getElementById('previewModal').classList.add('on'); }
-function qlPreview(){ var l=buildQlListing(); if(!l.title){ alert('Enter a title first.'); return; } renderModal(l); document.getElementById('previewModal').classList.add('on'); }
-function closeModal(){ document.getElementById('previewModal').classList.remove('on'); }
-document.getElementById('previewModal').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
-
-function renderModal(l){
-  var len=(l.title||'').length;
-  var charCls=len===0?'ok':len<40?'low':len>80?'over':'ok';
-  var charLbl=len===0?'Enter a title':len<40?'⚠ Too short ('+len+'/80)':len>80?'✗ Over limit ('+len+'/80)':'✓ '+len+'/80 characters';
-  var photos=l.photos&&l.photos.length?l.photos.slice(0,8).map(function(p){ return '<img src="'+esc(p.url)+'" alt="">'; }).join(''):'<div class="no-photo">No photos loaded</div>';
-  var badges=(l.cond?'<span class="preview-badge badge-cond">'+esc(l.cond)+'</span>':'')+(l.variant?'<span class="preview-badge badge-variant">'+esc(l.variant)+'</span>':'')+(l.auth?'<span class="preview-badge badge-auth">🔏 '+esc(l.auth)+'</span>':'');
-  document.getElementById('modalContent').innerHTML=
-    '<div class="char-warn '+charCls+'">'+charLbl+'</div>'
-    +'<div class="preview-listing">'
-    +'<div class="preview-photos">'+photos+'</div>'
-    +'<div class="preview-info">'
-    +'<div class="preview-title">'+esc(l.title||'—')+'</div>'
-    +'<div class="preview-price">$'+esc(l.price||'—')+'</div>'
-    +(badges?'<div class="preview-badges">'+badges+'</div>':'')
-    +'<div class="preview-meta">'
-    +'<div class="preview-meta-item">Condition: <span>'+esc(l.cond||'New')+'</span></div>'
-    +'<div class="preview-meta-item">Qty: <span>'+esc(l.qty||'1')+'</span></div>'
-    +'<div class="preview-meta-item">Category: <span>'+esc(l.cat||'—')+'</span></div>'
-    +'<div class="preview-meta-item">Line: <span>'+esc(l.line||'—')+'</span></div>'
-    +(l.sku?'<div class="preview-meta-item">SKU: <span>'+esc(l.sku)+'</span></div>':'')
-    +'</div>'
-    +'<div class="preview-desc">'+esc(l.desc||buildDesc(l))+'</div>'
-    +'</div></div>';
-}
-
-// EXPORTS
-function generateExports(type){
-  var sel=listings.filter(function(l){ return l.selected; });
-  if(!sel.length){ alert('Select at least one listing first.'); return; }
-  window['_'+type+'Texts']=sel.map(function(l){ return type==='mercari'?buildMercariText(l):buildFBText(l); });
-  document.getElementById(type==='mercari'?'mercariList':'fbList').innerHTML=sel.map(function(l,i){
-    var text=type==='mercari'?buildMercariText(l):buildFBText(l);
-    return '<div class="export-item"><div class="export-item-title"><span>'+(i+1)+'. '+esc(l.title.substring(0,55))+'</span><button class="copy-btn" onclick="copyExportItem(this,\'_'+type+'Texts\','+i+')">Copy</button></div><div class="export-text">'+esc(text)+'</div></div>';
-  }).join('');
-}
-function buildMercariText(l){
-  return ['TITLE: '+l.title,'','PRICE: $'+l.price,'CONDITION: '+(l.cond||'New'),'QUANTITY: '+(l.qty||'1'),'','DESCRIPTION:',(l.desc||buildDesc(l)),(l.sku?'\nSKU: '+l.sku:'')].join('\n');
-}
-function buildFBText(l){
-  var rows=[['Field','Value'],['Title',l.title||''],['Price','$'+(l.price||'')],['Condition',l.cond||'New'],['Quantity',l.qty||'1'],['Category',l.cat||'Funko Pop'],['Line',l.line||''],['Variant',l.variant||''],['Authentication',l.auth||''],['SKU',l.sku||''],['Description',(l.desc||buildDesc(l)).replace(/\n/g,' ')]];
-  var c=[16,58]; var div='-'.repeat(c[0]+c[1]+5);
-  return div+'\n'+rows.map(function(r){ return '| '+pad(r[0],c[0])+' | '+pad(r[1],c[1])+' |'; }).join('\n')+'\n'+div;
-}
-function pad(s,n){ s=String(s||''); return s.length>=n?s.substring(0,n):s+' '.repeat(n-s.length); }
-function copyExportItem(btn,storeKey,idx){ navigator.clipboard.writeText(window[storeKey][idx]).then(function(){ btn.textContent='✓ Copied'; btn.classList.add('copied'); setTimeout(function(){ btn.textContent='Copy'; btn.classList.remove('copied'); },2000); }); }
-function copyAllExports(type){ var key='_'+type+'Texts'; if(!window[key]||!window[key].length){ alert('Generate exports first.'); return; } navigator.clipboard.writeText(window[key].join('\n\n'+'─'.repeat(40)+'\n\n')).then(function(){ alert('All exports copied!'); }); }
-
-// QUICK LISTING
-function buildQlListing(){ return {title:document.getElementById('qlTitle').value.trim(),price:document.getElementById('qlPrice').value.trim(),cond:document.getElementById('qlCond').value,qty:document.getElementById('qlQty').value||'1',cat:document.getElementById('qlCat').value,line:document.getElementById('qlLine').value.trim(),variant:document.getElementById('qlVariant').value.trim(),auth:document.getElementById('qlAuth').value.trim(),sku:document.getElementById('qlSku').value.trim(),driveUrl:document.getElementById('qlDrive').value.trim(),driveId:parseDriveId(document.getElementById('qlDrive').value.trim()),desc:document.getElementById('qlDesc').value.trim(),photos:[],selected:true}; }
-function qlExport(type){
-  var l=buildQlListing();
-  if(!l.title){ alert('Enter a title first.'); return; }
+// ── SINGLE EXPORTS ────────────────────────────────────────────────
+function showExport(i,type){
+  var l=listings[i];
+  var out=document.getElementById('lexport_'+i);
   var text=type==='mercari'?buildMercariText(l):buildFBText(l);
   var label=type==='mercari'?'Mercari Export':'Facebook Marketplace Export';
-  var out=document.getElementById('qlExportOut'); out.style.display='block';
-  out.innerHTML='<div class="export-item"><div class="export-item-title"><span>'+esc(label)+'</span><button class="copy-btn" onclick="copyRaw(this)">Copy</button></div><div class="export-text" id="qlRawText">'+esc(text)+'</div></div>';
-  window._qlRawText=text;
+  window['_exp_'+i+'_'+type]=text;
+  out.innerHTML='<div class="export-box"><div class="export-box-title"><span>'+esc(label)+'</span><button class="copy-btn" onclick="copyExp(this,\'_exp_'+i+'_'+type+'\')">Copy</button></div><div class="export-text">'+esc(text)+'</div></div>';
 }
-function copyRaw(btn){ navigator.clipboard.writeText(window._qlRawText||'').then(function(){ btn.textContent='✓ Copied'; btn.classList.add('copied'); setTimeout(function(){ btn.textContent='Copy'; btn.classList.remove('copied'); },2000); }); }
-function qlClear(){ ['qlTitle','qlPrice','qlQty','qlLine','qlVariant','qlAuth','qlSku','qlDrive','qlDesc'].forEach(function(id){ document.getElementById(id).value=''; }); document.getElementById('qlCat').value=''; document.getElementById('qlCond').value='New'; document.getElementById('qlExportOut').style.display='none'; document.getElementById('qlDupWarn').classList.remove('show'); updateTitleMeter(); }
+function copyExp(btn,key){ navigator.clipboard.writeText(window[key]||'').then(function(){ btn.textContent='✓ Copied'; btn.classList.add('copied'); setTimeout(function(){ btn.textContent='Copy'; btn.classList.remove('copied'); },2000); }); }
 
-async function qlPostEbay(){
-  var l=buildQlListing(); if(!l.title||!l.price){ alert('Title and price required.'); return; }
+// ── BULK EXPORTS ──────────────────────────────────────────────────
+function exportSelected(type){
+  var sel=listings.filter(function(l){ return l.selected; });
+  if(!sel.length){ alert('Select at least one listing first.'); return; }
+  var texts=sel.map(function(l){ return type==='mercari'?buildMercariText(l):buildFBText(l); });
+  navigator.clipboard.writeText(texts.join('\n\n'+'─'.repeat(40)+'\n\n')).then(function(){ alert(texts.length+' '+type+' export'+(texts.length!==1?'s':'')+' copied to clipboard!'); });
+}
+
+function buildMercariText(l){
+  return 'TITLE: '+l.genTitle+'\n\nPRICE: $'+l.price+'\nCONDITION: '+l.cond+'\nQUANTITY: '+l.qty+'\n\nDESCRIPTION:\n'+l.genDesc;
+}
+function buildFBText(l){
+  var rows=[['Field','Value'],['Title',l.genTitle],['Price','$'+l.price],['Condition',l.cond],['Quantity',l.qty],['Line',l.line],['License',l.license],['Variant',l.variant||''],['Description',l.genDesc.replace(/\n/g,' ')]];
+  var c=[14,62]; var d='-'.repeat(c[0]+c[1]+5);
+  return d+'\n'+rows.map(function(r){ return '| '+pad(r[0],c[0])+' | '+pad(r[1],c[1])+' |'; }).join('\n')+'\n'+d;
+}
+function pad(s,n){ s=String(s||''); return s.length>=n?s.substring(0,n):s+' '.repeat(n-s.length); }
+
+// ── BULK UPLOAD ───────────────────────────────────────────────────
+async function bulkUpload(){
   var token=cfg('cfgEbayToken'), imgbbKey=cfg('cfgImgbbKey');
-  if(!token){ alert('eBay token not set.'); return; }
-  if(!confirm('Post "'+l.title+'" to your live eBay store?')) return;
-  if(l.driveId&&cfg('cfgDriveKey')){ fetchDriveFolder(l.driveId,cfg('cfgDriveKey'),async function(photos){ l.photos=photos||[]; await doPostEbay([l],token,imgbbKey); }); }
-  else await doPostEbay([l],token,imgbbKey);
-}
-
-// EBAY
-function buildEbayXml(l,imageUrls){
-  var catId=l.ebaycat||cfg('cfgCatId')||'220';
-  var desc=l.desc||buildDesc(l);
-  var condMap={'New':'1000','Like New':'3000','Very Good':'4000','Good':'5000','Acceptable':'6000'};
-  var picXml=imageUrls.map(function(u){ return '<PictureURL>'+u+'</PictureURL>'; }).join('\n    ');
-  return '<?xml version="1.0" encoding="utf-8"?>\n<AddItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">\n  <RequesterCredentials><eBayAuthToken>EBAY_TOKEN_PLACEHOLDER</eBayAuthToken></RequesterCredentials>\n  <Item>\n    <Title>'+xmlEsc(l.title)+'</Title>\n    <Description><![CDATA['+desc+']]></Description>\n    <PrimaryCategory><CategoryID>'+catId+'</CategoryID></PrimaryCategory>\n    <StartPrice>'+(l.price||'9.99')+'</StartPrice>\n    <CategoryMappingAllowed>true</CategoryMappingAllowed>\n    <ConditionID>'+(condMap[l.cond]||'1000')+'</ConditionID>\n    <Country>US</Country><Currency>USD</Currency>\n    <DispatchTimeMax>1</DispatchTimeMax>\n    <ListingDuration>GTC</ListingDuration>\n    <ListingType>FixedPriceItem</ListingType>\n    <Quantity>'+(l.qty||'1')+'</Quantity>\n    <Location>New Jersey, US</Location>\n'+(picXml?'    <PictureDetails>\n    '+picXml+'\n    </PictureDetails>\n':'')+'    <ShippingDetails><ShippingType>Flat</ShippingType><ShippingServiceOptions><ShippingServicePriority>1</ShippingServicePriority><ShippingService>USPSFirstClass</ShippingService><ShippingServiceCost>4.99</ShippingServiceCost></ShippingServiceOptions></ShippingDetails>\n    <ReturnPolicy><ReturnsAcceptedOption>ReturnsAccepted</ReturnsAcceptedOption><RefundOption>MoneyBack</RefundOption><ReturnsWithinOption>Days_30</ReturnsWithinOption><ShippingCostPaidByOption>Buyer</ShippingCostPaidByOption></ReturnPolicy>\n    <SKU>'+xmlEsc(l.sku||'')+'</SKU>\n  </Item>\n</AddItemRequest>';
-}
-
-async function postToEbay(){
-  var token=cfg('cfgEbayToken'),imgbbKey=cfg('cfgImgbbKey');
-  if(!token){ alert('eBay token not set.'); return; }
-  if(!imgbbKey){ alert('imgBB API key not set.'); return; }
+  if(!token){ alert('eBay token not set in Configuration.'); return; }
+  if(!imgbbKey){ alert('imgBB API key not set in Configuration.'); return; }
   var sel=listings.filter(function(l){ return l.selected; });
   if(!sel.length){ alert('Select at least one listing.'); return; }
-  if(!confirm('Post '+sel.length+' listing(s) to your live eBay store?')) return;
-  await doPostEbay(sel,token,imgbbKey);
-}
-
-async function doPostEbay(sel,token,imgbbKey){
-  document.getElementById('progressWrap').style.display='block';
+  if(!confirm('Post '+sel.length+' listing'+(sel.length!==1?'s':'')+' to your live eBay store?')) return;
+  document.getElementById('uploadCard').style.display='block';
   document.getElementById('resultsWrap').style.display='none';
   clearLog(); var ok=0,err=0;
   for(var i=0;i<sel.length;i++){
     var l=sel[i];
-    updateProgress(i,sel.length,'Posting: '+l.title.substring(0,50)+'…');
-    log('info','── Listing '+(i+1)+': '+l.title);
+    updateProgress(i,sel.length,'Posting: '+l.genTitle.substring(0,50)+'…');
+    log('info','── '+(i+1)+': '+l.genTitle);
     var hostedUrls=[];
-    if(l.photos&&l.photos.length){ log('info','  Uploading '+l.photos.length+' photo(s)…'); for(var j=0;j<Math.min(l.photos.length,12);j++){ try{ var u=await uploadToImgbb(l.photos[j].url,imgbbKey); if(u){ hostedUrls.push(u); log('ok','  ✓ Photo '+(j+1)); } else log('err','  ✗ Photo '+(j+1)+' failed'); }catch(e){ log('err','  ✗ '+e.message); } } }
-    var xml=buildEbayXml(l,hostedUrls).replace('EBAY_TOKEN_PLACEHOLDER',token);
-    try{ var result=await callEbayApi(xml); if(result.success){ l.ebayStatus='Posted'; log('ok','  ✓ Item ID: '+result.itemId); ok++; } else{ l.ebayStatus='Error: '+result.error; log('err','  ✗ '+result.error); err++; } }catch(e){ l.ebayStatus='Error: '+e.message; log('err','  ✗ '+e.message); err++; }
-    renderPreview();
+    if(l.photos&&l.photos.length){
+      log('info','  Uploading '+l.photos.length+' photo(s)…');
+      for(var j=0;j<Math.min(l.photos.length,12);j++){
+        try{ var u=await uploadToImgbb(l.photos[j].url,imgbbKey); if(u){ hostedUrls.push(u); log('ok','  ✓ Photo '+(j+1)); } else log('err','  ✗ Photo '+(j+1)+' failed'); }
+        catch(e){ log('err','  ✗ '+e.message); }
+      }
+    }
+    var xml=buildEbayXml(l,hostedUrls).replace('TOKEN_PLACEHOLDER',token);
+    try{
+      var result=await callEbayApi(xml);
+      if(result.success){ l.ebayStatus='Posted'; log('ok','  ✓ Item ID: '+result.itemId); ok++; }
+      else{ l.ebayStatus='Error: '+result.error; log('err','  ✗ '+result.error); err++; }
+    }catch(e){ l.ebayStatus='Error: '+e.message; log('err','  ✗ '+e.message); err++; }
+    // Update just the status badge on the card
+    var flags=document.getElementById('lcard_'+i)&&document.getElementById('lcard_'+i).querySelector('.flags-row');
+    if(flags) onTitleInput(listings.indexOf(l),l.genTitle);
   }
-  updateProgress(sel.length,sel.length,'Done!');
+  updateProgress(sel.length,sel.length,'Complete!');
   document.getElementById('resultsWrap').style.display='block';
   document.getElementById('rTotal').textContent=sel.length;
   document.getElementById('rOk').textContent=ok;
   document.getElementById('rErr').textContent=err;
-  log(ok===sel.length?'ok':'info','── Complete: '+ok+' posted, '+err+' errors.');
+  log(ok===sel.length?'ok':'info','── Done: '+ok+' posted, '+err+' error'+(err!==1?'s':'')+'.');
+}
+
+// ── EBAY XML ──────────────────────────────────────────────────────
+function buildEbayXml(l,imageUrls){
+  var catId=cfg('cfgCatId')||'220';
+  var condMap={'New':'1000','Like New':'3000','Very Good':'4000','Good':'5000','Acceptable':'6000'};
+  var picXml=imageUrls.map(function(u){ return '<PictureURL>'+u+'</PictureURL>'; }).join('\n    ');
+  return '<?xml version="1.0" encoding="utf-8"?>\n<AddItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">\n'
+    +'  <RequesterCredentials><eBayAuthToken>TOKEN_PLACEHOLDER</eBayAuthToken></RequesterCredentials>\n'
+    +'  <Item>\n'
+    +'    <Title>'+xmlEsc(l.genTitle)+'</Title>\n'
+    +'    <Description><![CDATA['+l.genDesc+']]></Description>\n'
+    +'    <PrimaryCategory><CategoryID>'+catId+'</CategoryID></PrimaryCategory>\n'
+    +'    <StartPrice>'+(l.price||'9.99')+'</StartPrice>\n'
+    +'    <CategoryMappingAllowed>true</CategoryMappingAllowed>\n'
+    +'    <ConditionID>'+(condMap[l.ebayCond||l.cond]||'1000')+'</ConditionID>\n'
+    +'    <Country>US</Country><Currency>USD</Currency>\n'
+    +'    <DispatchTimeMax>3</DispatchTimeMax>\n'
+    +'    <ListingDuration>GTC</ListingDuration>\n'
+    +'    <ListingType>FixedPriceItem</ListingType>\n'
+    +'    <Quantity>'+(l.qty||'1')+'</Quantity>\n'
+    +'    <Location>New Jersey, US</Location>\n'
+    +(picXml?'    <PictureDetails>\n    '+picXml+'\n    </PictureDetails>\n':'')
+    +'    <ShippingDetails><ShippingType>Flat</ShippingType><ShippingServiceOptions><ShippingServicePriority>1</ShippingServicePriority><ShippingService>USPSFirstClass</ShippingService><ShippingServiceCost>4.99</ShippingServiceCost></ShippingServiceOptions></ShippingDetails>\n'
+    +'    <ReturnPolicy><ReturnsAcceptedOption>ReturnsAccepted</ReturnsAcceptedOption><RefundOption>MoneyBack</RefundOption><ReturnsWithinOption>Days_30</ReturnsWithinOption><ShippingCostPaidByOption>Buyer</ShippingCostPaidByOption></ReturnPolicy>\n'
+    +'  </Item>\n</AddItemRequest>';
 }
 
 async function uploadToImgbb(driveThumbUrl,apiKey){
@@ -738,9 +1008,207 @@ async function callEbayApi(xml){
   return {success:false,error:errMsg?errMsg[1]:'Unknown eBay error'};
 }
 
-function updateProgress(done,total,label){ var pct=total>0?Math.round((done/total)*100):0; document.getElementById('progressBar').style.width=pct+'%'; document.getElementById('progressLabel').textContent=label||(done+' / '+total); }
+// ── PROGRESS ──────────────────────────────────────────────────────
+function updateProgress(done,total,label){ document.getElementById('progressBar').style.width=Math.round((done/total)*100)+'%'; document.getElementById('progressLabel').textContent=label; }
 function log(type,msg){ var box=document.getElementById('logBox'); var span=document.createElement('span'); span.className='log-'+type; span.textContent=msg+'\n'; box.appendChild(span); box.scrollTop=box.scrollHeight; }
 function clearLog(){ document.getElementById('logBox').innerHTML=''; }
+
+// ── PREVIEW MODAL ─────────────────────────────────────────────────
+function openPreview(i){
+  var l=listings[i];
+  // Pull current edited values from DOM
+  var title=document.getElementById('ltitle_'+i).value;
+  var desc=document.getElementById('ldesc_'+i).value;
+  var price=document.getElementById('lprice_'+i).value;
+  var qty=document.getElementById('lqty_'+i).value;
+  renderPreviewModal({title:title,desc:desc,price:price,qty:qty,ebayCond:l.ebayCond,dispCond:l.dispCond,template:l.template,line:l.line,license:l.license,variant:l.variant,exclusive:l.exclusive,signedBy:l.signedBy,authCompany:l.authCompany,photos:l.photos});
+  document.getElementById('previewModal').classList.add('on');
+}
+
+function qlOpenPreview(){
+  var title=document.getElementById('qlOutTitle').value;
+  var desc=document.getElementById('qlOutDesc').value;
+  var l=qlBuildListing();
+  renderPreviewModal({title:title,desc:desc,price:l.price,qty:l.qty,ebayCond:l.ebayCond,dispCond:l.dispCond,template:qlTemplate,line:l.line,license:l.license,variant:l.variant,exclusive:l.exclusive,signedBy:l.signedBy,authCompany:l.authCompany,photos:[]});
+  document.getElementById('previewModal').classList.add('on');
+}
+
+function renderPreviewModal(d){
+  var photosHtml=d.photos&&d.photos.length
+    ? d.photos.slice(0,8).map(function(p){ return '<img src="'+esc(p.url)+'" alt="">'; }).join('')
+    : '<div class="no-photo">No photos loaded</div>';
+  var badges='<span class="preview-badge badge-tmpl">'+esc(d.template)+'</span>';
+  if(d.exclusive) badges+='<span class="preview-badge badge-excl">'+esc(d.exclusive)+'</span>';
+  if(d.authCompany) badges+='<span class="preview-badge badge-auth">🔏 '+esc(d.authCompany)+'</span>';
+  var len=(d.title||'').length;
+  var meterColor=len===0?'#E2E5ED':len<=60||len>80?'#8B1A1A':'#E2E5ED';
+  var meterPct=Math.min(100,(len/80)*100);
+  var meterTxt=len===0?'0 / 80 characters':len<=60?len+' / 80 — Too short':len>80?len+' / 80 — Over limit!':len+' / 80';
+  var meterCls=len>0&&(len<=60||len>80)?'low':'ok';
+  document.getElementById('previewModalContent').innerHTML=
+    '<div style="margin-bottom:.75rem;">'
+    +'<div class="title-bar-wrap"><div class="title-bar" style="width:'+meterPct+'%;background:'+meterColor+';"></div></div>'
+    +'<span class="title-count '+meterCls+'" style="margin-top:3px;display:block;">'+meterTxt+'</span>'
+    +'</div>'
+    +'<div class="preview-listing">'
+    +'<div class="preview-photos">'+photosHtml+'</div>'
+    +'<div class="preview-info">'
+    +'<div class="preview-title-text">'+esc(d.title||'—')+'</div>'
+    +'<div class="preview-price">$'+esc(d.price||'—')+'</div>'
+    +'<div class="preview-badges">'+badges+'</div>'
+    +'<div class="preview-meta">'
+    +'<div class="preview-meta-item">Condition: <span>'+esc(d.dispCond||d.ebayCond||'Mint')+'</span></div>'
+    +'<div class="preview-meta-item">eBay Condition: <span>'+esc(d.ebayCond||'New')+'</span></div>'
+    +'<div class="preview-meta-item">Qty: <span>'+esc(d.qty||'1')+'</span></div>'
+    +'<div class="preview-meta-item">Line: <span>'+esc(d.line||'—')+'</span></div>'
+    +'<div class="preview-meta-item">License: <span>'+esc(d.license||'—')+'</span></div>'
+    +(d.variant?'<div class="preview-meta-item">Variant: <span>'+esc(d.variant)+'</span></div>':'')
+    +(d.signedBy?'<div class="preview-meta-item">Signed by: <span>'+esc(d.signedBy)+'</span></div>':'')
+    +'</div>'
+    +'<div class="preview-desc">'+esc(d.desc||'')+'</div>'
+    +'</div>'
+    +'</div>';
+}
+
+function closePreview(){
+  document.getElementById('previewModal').classList.remove('on');
+}
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closePreview(); });
+
+// ── QUICK LISTING ─────────────────────────────────────────────────
+var qlTemplate = 'Common';
+
+function qlSelectTemplate(btn) {
+  document.querySelectorAll('.ql-tmpl-btn').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  qlTemplate = btn.getAttribute('data-tmpl');
+  // Show/hide conditional fields
+  var isExclusive = qlTemplate==='Exclusive'||qlTemplate==='Limited Edition';
+  var isLimited  = qlTemplate==='Limited Edition';
+  var isSigned   = qlTemplate==='Signed';
+  document.querySelectorAll('.ql-variant-field').forEach(function(el){ el.style.display=isExclusive?'flex':'none'; });
+  document.querySelectorAll('.ql-limited-field').forEach(function(el){ el.style.display=isLimited?'flex':'none'; });
+  document.querySelectorAll('.ql-signed-field').forEach(function(el){ el.style.display=isSigned?'flex':'none'; });
+  qlLiveUpdate();
+}
+
+function qlBuildListing() {
+  return {
+    template:    qlTemplate,
+    name:        document.getElementById('qlName').value.trim(),
+    number:      document.getElementById('qlNumber').value.trim(),
+    line:        document.getElementById('qlLine').value.trim(),
+    license:     document.getElementById('qlLicense').value.trim(),
+    price:       document.getElementById('qlPrice').value.trim(),
+    qty:         document.getElementById('qlQty').value.trim()||'1',
+    ebayCond:    document.getElementById('qlEbayCond').value,
+    dispCond:    document.getElementById('qlDispCond').value,
+    variant:     document.getElementById('qlVariant').value.trim(),
+    exclusive:   document.getElementById('qlExclusive').value.trim(),
+    pieceCount:  document.getElementById('qlPieceCount').value.trim(),
+    signedBy:    document.getElementById('qlSignedBy').value.trim(),
+    authCompany: document.getElementById('qlAuthCompany').value.trim(),
+    coaNumber:   document.getElementById('qlCoaNumber').value.trim(),
+    driveUrl:    document.getElementById('qlDrive').value.trim(),
+    driveId:     parseDriveId(document.getElementById('qlDrive').value.trim()),
+    photos:      []
+  };
+}
+
+function qlLiveUpdate() {
+  // Only update title meter live if output is already showing
+  if(document.getElementById('qlOutputWrap').style.display==='none') return;
+  var l=qlBuildListing();
+  generateListing(l);
+  document.getElementById('qlOutTitle').value=l.genTitle;
+  document.getElementById('qlOutDesc').value=l.genDesc;
+  qlUpdateMeter(l.genTitle);
+}
+
+function qlGenerate() {
+  var l=qlBuildListing();
+  if(!l.name){ alert('Enter a name first.'); return; }
+  generateListing(l);
+  document.getElementById('qlOutTitle').value=l.genTitle;
+  document.getElementById('qlOutDesc').value=l.genDesc;
+  document.getElementById('qlOutputWrap').style.display='block';
+  document.getElementById('qlExportOut').innerHTML='';
+  qlUpdateMeter(l.genTitle);
+  document.getElementById('qlOutputWrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function qlUpdateMeter(val) {
+  var len=val.length;
+  var bar=document.getElementById('qlOutBar');
+  var count=document.getElementById('qlOutCount');
+  var tip=document.getElementById('qlOutTip');
+  var dupWarn=document.getElementById('qlDupWarn');
+  bar.style.width=Math.min(100,(len/80)*100)+'%';
+  if(len===0){ bar.style.background='#E2E5ED'; count.className='title-count'; count.textContent='0 / 80 characters'; tip.textContent=''; }
+  else if(len<=60){ bar.style.background='#8B1A1A'; count.className='title-count low'; count.textContent=len+' / 80 — Too short'; tip.textContent='💡 Add variant, exclusive, or "- IN HAND" to fill out.'; }
+  else if(len<=80){ bar.style.background='#E2E5ED'; count.className='title-count ok'; count.textContent=len+' / 80'; tip.textContent=''; }
+  else{ bar.style.background='#8B1A1A'; count.className='title-count low'; count.textContent=len+' / 80 — Over limit! Trim '+(len-80)+' character'+(len-80!==1?'s':''); tip.textContent=''; }
+  dupWarn.style.display=len>10&&isDuplicate(val)?'flex':'none';
+}
+
+function qlExport(type) {
+  var l=qlBuildListing();
+  l.genTitle=document.getElementById('qlOutTitle').value;
+  l.genDesc=document.getElementById('qlOutDesc').value;
+  if(!l.genTitle){ alert('Generate a listing first.'); return; }
+  var text=type==='mercari'?buildMercariText(l):buildFBText(l);
+  var label=type==='mercari'?'Mercari Export':'Facebook Marketplace Export';
+  window._qlExportText=text;
+  document.getElementById('qlExportOut').innerHTML=
+    '<div class="export-box" style="margin-top:.75rem;"><div class="export-box-title"><span>'+esc(label)+'</span>'
+    +'<button class="copy-btn" onclick="copyQlExport(this)">Copy</button></div>'
+    +'<div class="export-text">'+esc(text)+'</div></div>';
+}
+function copyQlExport(btn){ navigator.clipboard.writeText(window._qlExportText||'').then(function(){ btn.textContent='✓ Copied'; btn.classList.add('copied'); setTimeout(function(){ btn.textContent='Copy'; btn.classList.remove('copied'); },2000); }); }
+
+async function qlPostEbay(){
+  var token=cfg('cfgEbayToken'), imgbbKey=cfg('cfgImgbbKey');
+  if(!token){ alert('eBay token not set in Configuration.'); return; }
+  var l=qlBuildListing();
+  l.genTitle=document.getElementById('qlOutTitle').value;
+  l.genDesc=document.getElementById('qlOutDesc').value;
+  if(!l.genTitle||!l.price){ alert('Title and price are required.'); return; }
+  if(!confirm('Post "'+l.genTitle+'" to your live eBay store?')) return;
+  if(l.driveId&&cfg('cfgDriveKey')){
+    fetchDriveFolder(l.driveId,cfg('cfgDriveKey'),async function(photos){
+      l.photos=photos||[];
+      await qlDoPost(l,token,imgbbKey);
+    });
+  } else {
+    await qlDoPost(l,token,imgbbKey);
+  }
+}
+
+async function qlDoPost(l,token,imgbbKey){
+  var hostedUrls=[];
+  if(l.photos&&l.photos.length){
+    for(var j=0;j<Math.min(l.photos.length,12);j++){
+      try{ var u=await uploadToImgbb(l.photos[j].url,imgbbKey); if(u) hostedUrls.push(u); }catch(e){}
+    }
+  }
+  var xml=buildEbayXml(l,hostedUrls).replace('TOKEN_PLACEHOLDER',token);
+  try{
+    var result=await callEbayApi(xml);
+    if(result.success){ alert('✓ Posted! eBay Item ID: '+result.itemId); }
+    else{ alert('eBay error: '+result.error); }
+  }catch(e){ alert('Post failed: '+e.message); }
+}
+
+function qlClear(){
+  ['qlName','qlNumber','qlLine','qlLicense','qlPrice','qlVariant','qlExclusive','qlPieceCount','qlSignedBy','qlAuthCompany','qlCoaNumber','qlDrive'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('qlQty').value='1';
+  document.getElementById('qlEbayCond').value='New';
+  document.getElementById('qlDispCond').value='Mint';
+  document.getElementById('qlOutputWrap').style.display='none';
+  document.getElementById('qlExportOut').innerHTML='';
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────
 function showBanner(id,type,msg){ var el=document.getElementById(id); el.className='banner '+type; el.style.display='flex'; el.textContent=msg; }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function xmlEsc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;'); }
