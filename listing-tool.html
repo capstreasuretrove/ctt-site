@@ -968,6 +968,8 @@ async function bulkUpload(){
         catch(e){ log('err','  ✗ '+e.message); }
       }
     }
+    // Always append CTT store photo as last image
+    hostedUrls.push('https://drive.google.com/thumbnail?id=1RxxPvmVJ4bQlGtG3TWkaqx22VFAYOOwZ&sz=w800');
     var xml=buildEbayXml(l,hostedUrls).replace('TOKEN_PLACEHOLDER',token);
     try{
       var result=await callEbayApi(xml);
@@ -1224,34 +1226,70 @@ function copyQlExport(btn){ navigator.clipboard.writeText(window._qlExportText||
 async function qlPostEbay(){
   var token=cfg('cfgEbayToken'), imgbbKey=cfg('cfgImgbbKey');
   if(!token){ alert('eBay token not set in Configuration.'); return; }
+  if(!imgbbKey){ alert('imgBB API key not set in Configuration.'); return; }
   var l=qlBuildListing();
   l.genTitle=document.getElementById('qlOutTitle').value;
   l.genDesc=document.getElementById('qlOutDesc').value;
   if(!l.genTitle||!l.price){ alert('Title and price are required.'); return; }
   if(!confirm('Post "'+l.genTitle+'" to your live eBay store?')) return;
-  if(l.driveId&&cfg('cfgDriveKey')){
-    fetchDriveFolder(l.driveId,cfg('cfgDriveKey'),async function(photos){
-      l.photos=photos||[];
-      await qlDoPost(l,token,imgbbKey);
+
+  // Show posting status in the output area
+  var statusEl=document.getElementById('qlPostStatus');
+  if(!statusEl){
+    statusEl=document.createElement('div');
+    statusEl.id='qlPostStatus';
+    statusEl.style.cssText='margin-top:.75rem;font-size:.82rem;color:var(--muted);';
+    document.getElementById('qlExportOut').after(statusEl);
+  }
+
+  if(l.driveId && cfg('cfgDriveKey')){
+    statusEl.textContent='📁 Fetching photos from Drive…';
+    fetchDriveFolder(l.driveId, cfg('cfgDriveKey'), async function(photos){
+      l.photos = photos||[];
+      if(!l.photos.length){
+        statusEl.textContent='⚠ No photos found in Drive folder. Check the folder URL and that it is set to "Anyone with the link can view".';
+        if(!confirm('No photos found in Drive folder. Post anyway without photos?')) return;
+      } else {
+        statusEl.textContent='📸 Found '+l.photos.length+' photo(s). Uploading to imgBB…';
+      }
+      await qlDoPost(l, token, imgbbKey, statusEl);
     });
+  } else if(l.driveId && !cfg('cfgDriveKey')){
+    statusEl.innerHTML='⚠ Drive folder linked but no Google Drive API Key is saved in <strong>Configuration</strong>. Add your API key and save, then try again.';
   } else {
-    await qlDoPost(l,token,imgbbKey);
+    if(!confirm('No Drive folder linked — post without photos?')) return;
+    await qlDoPost(l, token, imgbbKey, statusEl);
   }
 }
 
-async function qlDoPost(l,token,imgbbKey){
+async function qlDoPost(l, token, imgbbKey, statusEl){
   var hostedUrls=[];
-  if(l.photos&&l.photos.length){
-    for(var j=0;j<Math.min(l.photos.length,12);j++){
-      try{ var u=await uploadToImgbb(l.photos[j].url,imgbbKey); if(u) hostedUrls.push(u); }catch(e){}
+  if(l.photos && l.photos.length){
+    for(var j=0; j<Math.min(l.photos.length,12); j++){
+      try{
+        if(statusEl) statusEl.textContent='⬆ Uploading photo '+(j+1)+' of '+Math.min(l.photos.length,12)+'…';
+        var u=await uploadToImgbb(l.photos[j].url, imgbbKey);
+        if(u) hostedUrls.push(u);
+        else if(statusEl) statusEl.textContent='⚠ Photo '+(j+1)+' failed to upload to imgBB.';
+      }catch(e){
+        if(statusEl) statusEl.textContent='⚠ Photo upload error: '+e.message;
+      }
     }
   }
+  if(statusEl) statusEl.textContent='📡 Sending listing to eBay…';
+  // Always append CTT store photo as last image
+  hostedUrls.push('https://drive.google.com/thumbnail?id=1RxxPvmVJ4bQlGtG3TWkaqx22VFAYOOwZ&sz=w800');
   var xml=buildEbayXml(l,hostedUrls).replace('TOKEN_PLACEHOLDER',token);
   try{
     var result=await callEbayApi(xml);
-    if(result.success){ alert('✓ Posted! eBay Item ID: '+result.itemId); }
-    else{ alert('eBay error: '+result.error); }
-  }catch(e){ alert('Post failed: '+e.message); }
+    if(result.success){
+      if(statusEl) statusEl.innerHTML='<span style="color:var(--green);font-weight:600;">✓ Posted! eBay Item ID: '+result.itemId+'</span>';
+    } else {
+      if(statusEl) statusEl.innerHTML='<span style="color:var(--red);">✗ eBay error: '+esc(result.error)+'</span>';
+    }
+  }catch(e){
+    if(statusEl) statusEl.innerHTML='<span style="color:var(--red);">✗ Post failed: '+esc(e.message)+'</span>';
+  }
 }
 
 function qlClear(){
