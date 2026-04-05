@@ -1043,8 +1043,15 @@ async function uploadToImgbb(driveThumbUrl,apiKey){
   return new Promise(function(resolve,reject){ var reader=new FileReader(); reader.onload=async function(){ var b64=reader.result.split(',')[1]; var form=new FormData(); form.append('key',apiKey); form.append('image',b64); try{ var r=await fetch('https://api.imgbb.com/1/upload',{method:'POST',body:form}); var data=await r.json(); if(data.success) resolve(data.data.url); else resolve(null); }catch(e){ reject(e); } }; reader.onerror=reject; reader.readAsDataURL(blob); });
 }
 async function callEbayApi(xml){
-  var resp=await fetch('https://api.ebay.com/ws/api.dll',{method:'POST',headers:{'Content-Type':'text/xml','X-EBAY-API-COMPATIBILITY-LEVEL':'1155','X-EBAY-API-CALL-NAME':'AddItem','X-EBAY-API-SITEID':'0'},body:xml});
-  var text=await resp.text(); var ack=text.match(/<Ack>(.*?)<\/Ack>/),itemId=text.match(/<ItemID>(\d+)<\/ItemID>/),errMsg=text.match(/<LongMessage>(.*?)<\/LongMessage>/);
+  // Calls our Netlify proxy function which forwards to eBay's Trading API
+  // This avoids the CORS restriction on direct browser-to-eBay calls
+  var resp = await fetch('/.netlify/functions/ebay-proxy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ xml: xml, callName: 'AddItem' })
+  });
+  var text = await resp.text();
+  var ack=text.match(/<Ack>(.*?)<\/Ack>/),itemId=text.match(/<ItemID>(\d+)<\/ItemID>/),errMsg=text.match(/<LongMessage>(.*?)<\/LongMessage>/);
   if(ack&&(ack[1]==='Success'||ack[1]==='Warning')) return {success:true,itemId:itemId?itemId[1]:'?'};
   return {success:false,error:errMsg?errMsg[1]:'Unknown eBay error'};
 }
