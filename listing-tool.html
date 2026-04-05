@@ -303,6 +303,8 @@ body{font-family:'DM Sans',Arial,sans-serif;background:#F7F8FA;color:#1B2A5E;min
           <div class="field"><label>Default Return Policy</label><input type="text" id="cfgReturns" value="30 day returns accepted. Buyer pays return shipping."></div>
           <div class="field"><label>Default eBay Category ID</label><input type="text" id="cfgCatId" value="220"><span class="field-note">220 = Toys &amp; Hobbies → Funko</span></div>
           <div class="field"><label>Seller Username</label><input type="text" id="cfgSeller" value="captainstreasuretrove"></div>
+          <div class="field"><label>Default Weight (lbs)</label><input type="text" id="cfgWeight" value="1"><span class="field-note">Used when Ship Override column is blank</span></div>
+          <div class="field"><label>Default Box Size (LxWxH inches)</label><input type="text" id="cfgBoxSize" value="8x6x5"><span class="field-note">e.g. 8x6x5 — used when Ship Override is blank</span></div>
         </div>
         <div style="margin-top:1rem;display:flex;align-items:center;gap:12px;">
           <button class="btn btn-navy" onclick="saveCfg()">Save Configuration</button>
@@ -419,6 +421,10 @@ body{font-family:'DM Sans',Arial,sans-serif;background:#F7F8FA;color:#1B2A5E;min
             <label>Google Drive Folder URL</label>
             <input type="text" id="qlDrive" placeholder="https://drive.google.com/drive/folders/…">
           </div>
+          <div class="field ql-full">
+            <label>Shipping Override <span style="font-size:.7rem;font-weight:400;color:var(--muted);">— leave blank to use defaults (1lb, 8x6x5)</span></label>
+            <input type="text" id="qlShipOverride" placeholder="e.g. 2 / 10x8x6">
+          </div>
 
         </div><!-- /ql-grid -->
 
@@ -501,7 +507,7 @@ const COL = {
   variant:9, exclusive:10,
   pieceCount:11,
   signedBy:12, authCompany:13, coaNumber:14,
-  driveUrl:15, ebayStatus:16
+  driveUrl:15, shipOverride:16, ebayStatus:17
 };
 
 let listings = [];
@@ -522,7 +528,7 @@ function checkPw(){
 document.getElementById('pwInput').addEventListener('keydown',function(e){ if(e.key==='Enter') checkPw(); });
 
 // ── CONFIG ───────────────────────────────────────────────────────
-var CFG=['cfgSheetId','cfgDriveKey','cfgImgbbKey','cfgEbayToken','cfgShipping','cfgReturns','cfgCatId','cfgSeller'];
+var CFG=['cfgSheetId','cfgDriveKey','cfgImgbbKey','cfgEbayToken','cfgShipping','cfgReturns','cfgCatId','cfgSeller','cfgWeight','cfgBoxSize'];
 function saveCfg(){ CFG.forEach(function(id){ localStorage.setItem(id,document.getElementById(id).value); }); var s=document.getElementById('cfgSaved'); s.style.display='inline'; setTimeout(function(){ s.style.display='none'; },2000); checkEbayToken(); }
 function loadCfg(){ CFG.forEach(function(id){ var v=localStorage.getItem(id); if(v) document.getElementById(id).value=v; }); checkEbayToken(); }
 function checkEbayToken(){ var has=document.getElementById('cfgEbayToken').value.trim().length>10; document.getElementById('bulkUploadBtn').disabled=!has; var qlBtn=document.getElementById('qlEbayBtn'); if(qlBtn) qlBtn.disabled=!has; document.getElementById('ebayPendingNotice').style.display=has?'none':'flex'; }
@@ -604,6 +610,7 @@ function parseRow(r){
     coaNumber:  cell(COL.coaNumber).trim(),
     driveUrl:   du,
     driveId:    parseDriveId(du),
+    shipOverride: cell(COL.shipOverride).trim(),
     photos:     [],
     selected:   true,
     expanded:   true,
@@ -976,6 +983,21 @@ function buildEbayXml(l,imageUrls){
   var catId=cfg('cfgCatId')||'220';
   var condMap={'New':'1000','Like New':'3000','Very Good':'4000','Good':'5000','Acceptable':'6000'};
   var picXml=imageUrls.map(function(u){ return '<PictureURL>'+u+'</PictureURL>'; }).join('\n    ');
+
+  // Parse shipping — override format: "weight / LxWxH", e.g. "2 / 10x8x6"
+  var weight=parseFloat(cfg('cfgWeight'))||1;
+  var boxSize=cfg('cfgBoxSize')||'8x6x5';
+  if(l.shipOverride&&l.shipOverride.trim()){
+    var parts=l.shipOverride.split('/');
+    if(parts[0]) weight=parseFloat(parts[0].trim())||weight;
+    if(parts[1]) boxSize=parts[1].trim()||boxSize;
+  }
+  var dims=boxSize.toLowerCase().replace(/\s/g,'').split('x');
+  var boxL=dims[0]||'8', boxW=dims[1]||'6', boxH=dims[2]||'5';
+  var weightOz=Math.round(weight*16); // eBay uses oz for major unit
+  var weightLbs=Math.floor(weight);
+  var weightOzRemainder=Math.round((weight-weightLbs)*16);
+
   return '<?xml version="1.0" encoding="utf-8"?>\n<AddItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">\n'
     +'  <RequesterCredentials><eBayAuthToken>TOKEN_PLACEHOLDER</eBayAuthToken></RequesterCredentials>\n'
     +'  <Item>\n'
@@ -992,7 +1014,26 @@ function buildEbayXml(l,imageUrls){
     +'    <Quantity>'+(l.qty||'1')+'</Quantity>\n'
     +'    <Location>New Jersey, US</Location>\n'
     +(picXml?'    <PictureDetails>\n    '+picXml+'\n    </PictureDetails>\n':'')
-    +'    <ShippingDetails><ShippingType>Flat</ShippingType><ShippingServiceOptions><ShippingServicePriority>1</ShippingServicePriority><ShippingService>USPSFirstClass</ShippingService><ShippingServiceCost>4.99</ShippingServiceCost></ShippingServiceOptions></ShippingDetails>\n'
+    +'    <ShippingDetails>\n'
+    +'      <ShippingType>Calculated</ShippingType>\n'
+    +'      <ShippingServiceOptions>\n'
+    +'        <ShippingServicePriority>1</ShippingServicePriority>\n'
+    +'        <ShippingService>USPSPriority</ShippingService>\n'
+    +'      </ShippingServiceOptions>\n'
+    +'      <ShippingServiceOptions>\n'
+    +'        <ShippingServicePriority>2</ShippingServicePriority>\n'
+    +'        <ShippingService>USPSFirstClass</ShippingService>\n'
+    +'      </ShippingServiceOptions>\n'
+    +'    </ShippingDetails>\n'
+    +'    <ShippingPackageDetails>\n'
+    +'      <MeasurementUnit>English</MeasurementUnit>\n'
+    +'      <PackageDepth unit="in">'+boxH+'</PackageDepth>\n'
+    +'      <PackageLength unit="in">'+boxL+'</PackageLength>\n'
+    +'      <PackageWidth unit="in">'+boxW+'</PackageWidth>\n'
+    +'      <WeightMajor unit="lbs">'+weightLbs+'</WeightMajor>\n'
+    +'      <WeightMinor unit="oz">'+weightOzRemainder+'</WeightMinor>\n'
+    +'      <ShippingPackage>PackageThickEnvelope</ShippingPackage>\n'
+    +'    </ShippingPackageDetails>\n'
     +'    <ReturnPolicy><ReturnsAcceptedOption>ReturnsAccepted</ReturnsAcceptedOption><RefundOption>MoneyBack</RefundOption><ReturnsWithinOption>Days_30</ReturnsWithinOption><ShippingCostPaidByOption>Buyer</ShippingCostPaidByOption></ReturnPolicy>\n'
     +'  </Item>\n</AddItemRequest>';
 }
@@ -1021,7 +1062,7 @@ function openPreview(i){
   var desc=document.getElementById('ldesc_'+i).value;
   var price=document.getElementById('lprice_'+i).value;
   var qty=document.getElementById('lqty_'+i).value;
-  renderPreviewModal({title:title,desc:desc,price:price,qty:qty,ebayCond:l.ebayCond,dispCond:l.dispCond,template:l.template,line:l.line,license:l.license,variant:l.variant,exclusive:l.exclusive,signedBy:l.signedBy,authCompany:l.authCompany,photos:l.photos});
+  renderPreviewModal({title:title,desc:desc,price:price,qty:qty,ebayCond:l.ebayCond,dispCond:l.dispCond,template:l.template,line:l.line,license:l.license,variant:l.variant,exclusive:l.exclusive,signedBy:l.signedBy,authCompany:l.authCompany,photos:l.photos,shipOverride:l.shipOverride});
   document.getElementById('previewModal').classList.add('on');
 }
 
@@ -1029,7 +1070,7 @@ function qlOpenPreview(){
   var title=document.getElementById('qlOutTitle').value;
   var desc=document.getElementById('qlOutDesc').value;
   var l=qlBuildListing();
-  renderPreviewModal({title:title,desc:desc,price:l.price,qty:l.qty,ebayCond:l.ebayCond,dispCond:l.dispCond,template:qlTemplate,line:l.line,license:l.license,variant:l.variant,exclusive:l.exclusive,signedBy:l.signedBy,authCompany:l.authCompany,photos:[]});
+  renderPreviewModal({title:title,desc:desc,price:l.price,qty:l.qty,ebayCond:l.ebayCond,dispCond:l.dispCond,template:qlTemplate,line:l.line,license:l.license,variant:l.variant,exclusive:l.exclusive,signedBy:l.signedBy,authCompany:l.authCompany,photos:[],shipOverride:l.shipOverride});
   document.getElementById('previewModal').classList.add('on');
 }
 
@@ -1064,6 +1105,7 @@ function renderPreviewModal(d){
     +'<div class="preview-meta-item">License: <span>'+esc(d.license||'—')+'</span></div>'
     +(d.variant?'<div class="preview-meta-item">Variant: <span>'+esc(d.variant)+'</span></div>':'')
     +(d.signedBy?'<div class="preview-meta-item">Signed by: <span>'+esc(d.signedBy)+'</span></div>':'')
+    +'<div class="preview-meta-item">Shipping: <span>'+(d.shipOverride&&d.shipOverride.trim()?esc(d.shipOverride):(cfg('cfgWeight')||'1')+'lb, '+(cfg('cfgBoxSize')||'8x6x5')+'"')+'</span></div>'
     +'</div>'
     +'<div class="preview-desc">'+esc(d.desc||'')+'</div>'
     +'</div>'
@@ -1111,6 +1153,7 @@ function qlBuildListing() {
     coaNumber:   document.getElementById('qlCoaNumber').value.trim(),
     driveUrl:    document.getElementById('qlDrive').value.trim(),
     driveId:     parseDriveId(document.getElementById('qlDrive').value.trim()),
+    shipOverride:document.getElementById('qlShipOverride').value.trim(),
     photos:      []
   };
 }
@@ -1200,7 +1243,7 @@ async function qlDoPost(l,token,imgbbKey){
 }
 
 function qlClear(){
-  ['qlName','qlNumber','qlLine','qlLicense','qlPrice','qlVariant','qlExclusive','qlPieceCount','qlSignedBy','qlAuthCompany','qlCoaNumber','qlDrive'].forEach(function(id){ document.getElementById(id).value=''; });
+  ['qlName','qlNumber','qlLine','qlLicense','qlPrice','qlVariant','qlExclusive','qlPieceCount','qlSignedBy','qlAuthCompany','qlCoaNumber','qlDrive','qlShipOverride'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('qlQty').value='1';
   document.getElementById('qlEbayCond').value='New';
   document.getElementById('qlDispCond').value='Mint';
