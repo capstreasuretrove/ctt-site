@@ -306,6 +306,14 @@ body{font-family:'DM Sans',Arial,sans-serif;background:#F7F8FA;color:#1B2A5E;min
           <div class="field"><label>Default Weight (lbs)</label><input type="text" id="cfgWeight" value="1"><span class="field-note">Used when Ship Override column is blank</span></div>
           <div class="field"><label>Default Box Size (LxWxH inches)</label><input type="text" id="cfgBoxSize" value="8x6x5"><span class="field-note">e.g. 8x6x5 — used when Ship Override is blank</span></div>
         </div>
+        <hr class="divider">
+        <div style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem;">eBay Business Policy IDs</div>
+        <div class="cfg-grid">
+          <div class="field"><label>Shipping Policy ID</label><input type="text" id="cfgShipPolicy" value="250736863013"><span class="field-note">Calculated: USPSParcel, 3 business days</span></div>
+          <div class="field"><label>Payment Policy ID</label><input type="text" id="cfgPayPolicy" value="250736864013"><span class="field-note">eBay Managed Payments</span></div>
+          <div class="field"><label>Return Policy ID</label><input type="text" id="cfgReturnPolicy" value="250285724013"><span class="field-note">No Return Accepted</span></div>
+        </div>
+        </div>
         <div style="margin-top:1rem;display:flex;align-items:center;gap:12px;">
           <button class="btn btn-navy" onclick="saveCfg()">Save Configuration</button>
           <span id="cfgSaved" style="font-size:.8rem;color:var(--green);display:none;">✓ Saved</span>
@@ -528,7 +536,7 @@ function checkPw(){
 document.getElementById('pwInput').addEventListener('keydown',function(e){ if(e.key==='Enter') checkPw(); });
 
 // ── CONFIG ───────────────────────────────────────────────────────
-var CFG=['cfgSheetId','cfgDriveKey','cfgImgbbKey','cfgEbayToken','cfgShipping','cfgReturns','cfgCatId','cfgSeller','cfgWeight','cfgBoxSize'];
+var CFG=['cfgSheetId','cfgDriveKey','cfgImgbbKey','cfgEbayToken','cfgShipping','cfgReturns','cfgCatId','cfgSeller','cfgWeight','cfgBoxSize','cfgShipPolicy','cfgPayPolicy','cfgReturnPolicy'];
 function saveCfg(){ CFG.forEach(function(id){ localStorage.setItem(id,document.getElementById(id).value); }); var s=document.getElementById('cfgSaved'); s.style.display='inline'; setTimeout(function(){ s.style.display='none'; },2000); checkEbayToken(); }
 function loadCfg(){ CFG.forEach(function(id){ var v=localStorage.getItem(id); if(v) document.getElementById(id).value=v; }); checkEbayToken(); }
 function checkEbayToken(){ var has=document.getElementById('cfgEbayToken').value.trim().length>10; document.getElementById('bulkUploadBtn').disabled=!has; var qlBtn=document.getElementById('qlEbayBtn'); if(qlBtn) qlBtn.disabled=!has; document.getElementById('ebayPendingNotice').style.display=has?'none':'flex'; }
@@ -984,7 +992,7 @@ function buildEbayXml(l,imageUrls){
   var condMap={'New':'1000','Like New':'3000','Very Good':'4000','Good':'5000','Acceptable':'6000'};
   var picXml=imageUrls.map(function(u){ return '<PictureURL>'+u+'</PictureURL>'; }).join('\n    ');
 
-  // Parse shipping — override format: "weight / LxWxH", e.g. "2 / 10x8x6"
+  // Shipping weight and dimensions — override or defaults
   var weight=parseFloat(cfg('cfgWeight'))||1;
   var boxSize=cfg('cfgBoxSize')||'8x6x5';
   if(l.shipOverride&&l.shipOverride.trim()){
@@ -994,9 +1002,13 @@ function buildEbayXml(l,imageUrls){
   }
   var dims=boxSize.toLowerCase().replace(/\s/g,'').split('x');
   var boxL=dims[0]||'8', boxW=dims[1]||'6', boxH=dims[2]||'5';
-  var weightOz=Math.round(weight*16); // eBay uses oz for major unit
   var weightLbs=Math.floor(weight);
   var weightOzRemainder=Math.round((weight-weightLbs)*16);
+
+  // Business policy IDs
+  var shipPolicyId=cfg('cfgShipPolicy');
+  var payPolicyId=cfg('cfgPayPolicy');
+  var returnPolicyId=cfg('cfgReturnPolicy');
 
   return '<?xml version="1.0" encoding="utf-8"?>\n<AddItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">\n'
     +'  <RequesterCredentials><eBayAuthToken>TOKEN_PLACEHOLDER</eBayAuthToken></RequesterCredentials>\n'
@@ -1014,17 +1026,11 @@ function buildEbayXml(l,imageUrls){
     +'    <Quantity>'+(l.qty||'1')+'</Quantity>\n'
     +'    <Location>New Jersey, US</Location>\n'
     +(picXml?'    <PictureDetails>\n    '+picXml+'\n    </PictureDetails>\n':'')
-    +'    <ShippingDetails>\n'
-    +'      <ShippingType>Calculated</ShippingType>\n'
-    +'      <ShippingServiceOptions>\n'
-    +'        <ShippingServicePriority>1</ShippingServicePriority>\n'
-    +'        <ShippingService>USPSPriority</ShippingService>\n'
-    +'      </ShippingServiceOptions>\n'
-    +'      <ShippingServiceOptions>\n'
-    +'        <ShippingServicePriority>2</ShippingServicePriority>\n'
-    +'        <ShippingService>USPSFirstClass</ShippingService>\n'
-    +'      </ShippingServiceOptions>\n'
-    +'    </ShippingDetails>\n'
+    +'    <SellerProfiles>\n'
+    +'      <SellerShippingProfile><ShippingProfileID>'+shipPolicyId+'</ShippingProfileID></SellerShippingProfile>\n'
+    +'      <SellerPaymentProfile><PaymentProfileID>'+payPolicyId+'</PaymentProfileID></SellerPaymentProfile>\n'
+    +'      <SellerReturnProfile><ReturnProfileID>'+returnPolicyId+'</ReturnProfileID></SellerReturnProfile>\n'
+    +'    </SellerProfiles>\n'
     +'    <ShippingPackageDetails>\n'
     +'      <MeasurementUnit>English</MeasurementUnit>\n'
     +'      <PackageDepth unit="in">'+boxH+'</PackageDepth>\n'
@@ -1034,7 +1040,6 @@ function buildEbayXml(l,imageUrls){
     +'      <WeightMinor unit="oz">'+weightOzRemainder+'</WeightMinor>\n'
     +'      <ShippingPackage>PackageThickEnvelope</ShippingPackage>\n'
     +'    </ShippingPackageDetails>\n'
-    +'    <ReturnPolicy><ReturnsAcceptedOption>ReturnsAccepted</ReturnsAcceptedOption><RefundOption>MoneyBack</RefundOption><ReturnsWithinOption>Days_30</ReturnsWithinOption><ShippingCostPaidByOption>Buyer</ShippingCostPaidByOption></ReturnPolicy>\n'
     +'  </Item>\n</AddItemRequest>';
 }
 
