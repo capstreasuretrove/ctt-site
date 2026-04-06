@@ -1031,7 +1031,14 @@ function buildEbayXml(l,imageUrls){
     +'    <ListingType>FixedPriceItem</ListingType>\n'
     +'    <Quantity>'+(l.qty||'1')+'</Quantity>\n'
     +'    <Location>New Jersey, US</Location>\n'
-    +(picXml?'    <PictureDetails>\n    '+picXml+'\n    </PictureDetails>\n':'')
+    +'    <ItemSpecifics>\n'
+    +'      <NameValueList><Name>Type</Name><Value>Vinyl Figure</Value></NameValueList>\n'
+    +'      <NameValueList><Name>Brand</Name><Value>Funko</Value></NameValueList>\n'
+    +'      <NameValueList><Name>Product Line</Name><Value>Pop! Vinyl</Value></NameValueList>\n'
+    +(l.license?'      <NameValueList><Name>Character Family</Name><Value>'+xmlEsc(l.license)+'</Value></NameValueList>\n':'')
+    +(l.name?'      <NameValueList><Name>Character</Name><Value>'+xmlEsc(l.name)+'</Value></NameValueList>\n':'')
+    +(l.number?'      <NameValueList><Name>Item Number</Name><Value>'+xmlEsc(l.number)+'</Value></NameValueList>\n':'')
+    +'    </ItemSpecifics>\n'
     +'    <SellerProfiles>\n'
     +'      <SellerShippingProfile><ShippingProfileID>'+shipPolicyId+'</ShippingProfileID></SellerShippingProfile>\n'
     +'      <SellerPaymentProfile><PaymentProfileID>'+payPolicyId+'</PaymentProfileID></SellerPaymentProfile>\n'
