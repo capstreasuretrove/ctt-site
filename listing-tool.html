@@ -1273,20 +1273,25 @@ async function qlDoPost(l, token, imgbbKey, statusEl){
       try{
         if(statusEl) statusEl.textContent='⬆ Uploading photo '+(j+1)+' of '+Math.min(l.photos.length,12)+'…';
         var u=await uploadToImgbb(l.photos[j].url, imgbbKey);
-        if(u) hostedUrls.push(u);
-        else if(statusEl) statusEl.textContent='⚠ Photo '+(j+1)+' failed to upload to imgBB.';
+        if(u){ hostedUrls.push(u); if(statusEl) statusEl.textContent='✓ Photo '+(j+1)+' uploaded: '+u; }
+        else if(statusEl) statusEl.textContent='⚠ Photo '+(j+1)+' returned null from imgBB. Drive URL was: '+l.photos[j].url;
       }catch(e){
-        if(statusEl) statusEl.textContent='⚠ Photo upload error: '+e.message;
+        if(statusEl) statusEl.textContent='⚠ Photo '+(j+1)+' error: '+e.message+' | Drive URL: '+l.photos[j].url;
       }
     }
+  } else {
+    if(statusEl) statusEl.textContent='⚠ No photos in photos array. Drive ID: '+(l.driveId||'none');
   }
   if(statusEl) statusEl.textContent='⬆ Uploading CTT store photo…';
-  // Always append CTT store photo as last image — upload through imgBB so eBay can access it
   try{
     var cttUrl=await uploadToImgbb('https://drive.google.com/thumbnail?id=1RxxPvmVJ4bQlGtG3TWkaqx22VFAYOOwZ&sz=w800',imgbbKey);
-    if(cttUrl) hostedUrls.push(cttUrl);
-  }catch(e){}
-  if(statusEl) statusEl.textContent='📡 Sending listing to eBay…';
+    if(cttUrl){ hostedUrls.push(cttUrl); if(statusEl) statusEl.textContent='✓ CTT photo uploaded: '+cttUrl; }
+    else if(statusEl) statusEl.textContent='⚠ CTT store photo returned null from imgBB.';
+  }catch(e){
+    if(statusEl) statusEl.textContent='⚠ CTT store photo error: '+e.message;
+  }
+  if(statusEl) statusEl.textContent='📡 Sending to eBay with '+hostedUrls.length+' photo(s)…';
+  if(statusEl) console.log('hostedUrls:', hostedUrls);
   var xml=buildEbayXml(l,hostedUrls).replace('TOKEN_PLACEHOLDER',token);
   try{
     var result=await callEbayApi(xml);
