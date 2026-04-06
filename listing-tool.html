@@ -1069,17 +1069,27 @@ async function uploadToImgbb(driveThumbUrl, apiKey){
   return null;
 }
 async function callEbayApi(xml){
-  // Calls our Netlify proxy function which forwards to eBay's Trading API
-  // This avoids the CORS restriction on direct browser-to-eBay calls
   var resp = await fetch('/.netlify/functions/ebay-proxy', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ xml: xml, callName: 'AddItem' })
   });
   var text = await resp.text();
-  var ack=text.match(/<Ack>(.*?)<\/Ack>/),itemId=text.match(/<ItemID>(\d+)<\/ItemID>/),errMsg=text.match(/<LongMessage>(.*?)<\/LongMessage>/);
-  if(ack&&(ack[1]==='Success'||ack[1]==='Warning')) return {success:true,itemId:itemId?itemId[1]:'?'};
-  return {success:false,error:errMsg?errMsg[1]:'Unknown eBay error'};
+  console.log('eBay raw response:', text);
+  var ack=text.match(/<Ack>(.*?)<\/Ack>/);
+  var itemId=text.match(/<ItemID>(\d+)<\/ItemID>/);
+  // Get all error/warning messages
+  var errors=[]; var re=/<LongMessage>(.*?)<\/LongMessage>/g; var m;
+  while((m=re.exec(text))!==null){ errors.push(m[1]); }
+  var severities=[]; var re2=/<SeverityCode>(.*?)<\/SeverityCode>/g;
+  while((m=re2.exec(text))!==null){ severities.push(m[1]); }
+  console.log('Ack:', ack&&ack[1], 'ItemID:', itemId&&itemId[1], 'Messages:', errors, 'Severities:', severities);
+  if(ack&&(ack[1]==='Success'||ack[1]==='Warning')&&itemId){
+    return {success:true, itemId:itemId[1], warnings:errors};
+  }
+  // Filter to only actual errors, not warnings
+  var errorMsgs=errors.filter(function(_,i){ return severities[i]==='Error'; });
+  return {success:false, error:errorMsgs.length?errorMsgs.join(' | '):errors.join(' | ')||'Unknown eBay error'};
 }
 
 // ── PROGRESS ──────────────────────────────────────────────────────
@@ -1311,7 +1321,8 @@ async function qlDoPost(l, token, imgbbKey, statusEl){
   try{
     var result=await callEbayApi(xml);
     if(result.success){
-      if(statusEl) statusEl.innerHTML='<span style="color:var(--green);font-weight:600;">✓ Posted! eBay Item ID: '+result.itemId+'</span>';
+      var warningHtml=result.warnings&&result.warnings.length?'<br><span style="color:var(--gold);font-size:.78rem;">⚠ Warnings: '+esc(result.warnings.join(' | '))+'</span>':'';
+      if(statusEl) statusEl.innerHTML='<span style="color:var(--green);font-weight:600;">✓ Posted! eBay Item ID: '+result.itemId+'</span>'+warningHtml;
     } else {
       if(statusEl) statusEl.innerHTML='<span style="color:var(--red);">✗ eBay error: '+esc(result.error)+'</span>';
     }
