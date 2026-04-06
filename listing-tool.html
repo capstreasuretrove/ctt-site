@@ -975,6 +975,7 @@ async function bulkUpload(){
       else log('err','  ✗ CTT store photo failed to upload');
     }catch(e){ log('err','  ✗ CTT store photo error: '+e.message); }
     var xml=buildEbayXml(l,hostedUrls).replace('TOKEN_PLACEHOLDER',token);
+  console.log('FULL XML:', xml);
     try{
       var result=await callEbayApi(xml);
       if(result.success){ l.ebayStatus='Posted'; log('ok','  ✓ Item ID: '+result.itemId); ok++; }
@@ -996,7 +997,7 @@ async function bulkUpload(){
 function buildEbayXml(l,imageUrls){
   var catId=cfg('cfgCatId')||'220';
   var condMap={'New':'1000','Like New':'3000','Very Good':'4000','Good':'5000','Acceptable':'6000'};
-  var picXml=imageUrls.map(function(u){ return '<PictureURL>'+u+'</PictureURL>'; }).join('\n    ');
+  var picXml=imageUrls.map(function(u){ return '<PictureURL>'+u+'</PictureURL>'; }).join('');
 
   // Shipping weight and dimensions — override or defaults
   var weight=parseFloat(cfg('cfgWeight'))||1;
@@ -1031,7 +1032,7 @@ function buildEbayXml(l,imageUrls){
     +'    <ListingType>FixedPriceItem</ListingType>\n'
     +'    <Quantity>'+(l.qty||'1')+'</Quantity>\n'
     +'    <PostalCode>08724</PostalCode>\n'
-    +(picXml?'    <PictureDetails>\n    '+picXml+'\n    </PictureDetails>\n':'')
+    +(picXml?'    <PictureDetails>'+picXml+'</PictureDetails>\n':'')
     +'    <ItemSpecifics>\n'
     +'      <NameValueList><Name>Type</Name><Value>Vinyl Figure</Value></NameValueList>\n'
     +'      <NameValueList><Name>Brand</Name><Value>Funko</Value></NameValueList>\n'
