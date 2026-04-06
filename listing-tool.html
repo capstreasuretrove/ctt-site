@@ -968,8 +968,12 @@ async function bulkUpload(){
         catch(e){ log('err','  ✗ '+e.message); }
       }
     }
-    // Always append CTT store photo as last image
-    hostedUrls.push('https://drive.google.com/thumbnail?id=1RxxPvmVJ4bQlGtG3TWkaqx22VFAYOOwZ&sz=w800');
+    // Always append CTT store photo as last image — upload through imgBB so eBay can access it
+    try{
+      var cttUrl=await uploadToImgbb('https://drive.google.com/thumbnail?id=1RxxPvmVJ4bQlGtG3TWkaqx22VFAYOOwZ&sz=w800',imgbbKey);
+      if(cttUrl){ hostedUrls.push(cttUrl); log('ok','  ✓ CTT store photo added'); }
+      else log('err','  ✗ CTT store photo failed to upload');
+    }catch(e){ log('err','  ✗ CTT store photo error: '+e.message); }
     var xml=buildEbayXml(l,hostedUrls).replace('TOKEN_PLACEHOLDER',token);
     try{
       var result=await callEbayApi(xml);
@@ -1276,9 +1280,13 @@ async function qlDoPost(l, token, imgbbKey, statusEl){
       }
     }
   }
+  if(statusEl) statusEl.textContent='⬆ Uploading CTT store photo…';
+  // Always append CTT store photo as last image — upload through imgBB so eBay can access it
+  try{
+    var cttUrl=await uploadToImgbb('https://drive.google.com/thumbnail?id=1RxxPvmVJ4bQlGtG3TWkaqx22VFAYOOwZ&sz=w800',imgbbKey);
+    if(cttUrl) hostedUrls.push(cttUrl);
+  }catch(e){}
   if(statusEl) statusEl.textContent='📡 Sending listing to eBay…';
-  // Always append CTT store photo as last image
-  hostedUrls.push('https://drive.google.com/thumbnail?id=1RxxPvmVJ4bQlGtG3TWkaqx22VFAYOOwZ&sz=w800');
   var xml=buildEbayXml(l,hostedUrls).replace('TOKEN_PLACEHOLDER',token);
   try{
     var result=await callEbayApi(xml);
