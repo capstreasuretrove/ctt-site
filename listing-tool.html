@@ -568,7 +568,7 @@ function loadSheet(){
   showBanner('sheetBanner','info','Loading sheet…');
   document.getElementById('loadBtn').disabled=true;
   // headers=3 skips the 3 header rows (title, subtitle, group labels, column labels = rows 1-4, so we use headers=4)
-  var url='https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?tqx=out:json&sheet='+encodeURIComponent(SHEET_NAME)+'&headers=4';
+  var url='https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?tqx=out:json&sheet='+encodeURIComponent(SHEET_NAME)+'&headers=8';
   var xhr=new XMLHttpRequest(); xhr.open('GET',url);
   xhr.onload=function(){
     document.getElementById('loadBtn').disabled=false;
@@ -961,12 +961,20 @@ async function bulkUpload(){
     updateProgress(i,sel.length,'Posting: '+l.genTitle.substring(0,50)+'…');
     log('info','── '+(i+1)+': '+l.genTitle);
     var hostedUrls=[];
+    // Auto-fetch photos from Drive if not already loaded
+    if((!l.photos||!l.photos.length)&&l.driveId&&cfg('cfgDriveKey')){
+      log('info','  Fetching photos from Drive…');
+      l.photos = await new Promise(function(res){ fetchDriveFolder(l.driveId,cfg('cfgDriveKey'),function(p){ res(p||[]); }); });
+      log('info','  Found '+l.photos.length+' photo(s) in Drive folder.');
+    }
     if(l.photos&&l.photos.length){
-      log('info','  Uploading '+l.photos.length+' photo(s)…');
+      log('info','  Uploading '+l.photos.length+' photo(s) to imgBB…');
       for(var j=0;j<Math.min(l.photos.length,12);j++){
         try{ var u=await uploadToImgbb(l.photos[j].url,imgbbKey); if(u){ hostedUrls.push(u); log('ok','  ✓ Photo '+(j+1)); } else log('err','  ✗ Photo '+(j+1)+' failed'); }
         catch(e){ log('err','  ✗ '+e.message); }
       }
+    } else {
+      log('info','  No photos found for this listing.');
     }
     // Always append CTT store photo as last image — upload through imgBB so eBay can access it
     try{
@@ -975,15 +983,14 @@ async function bulkUpload(){
       else log('err','  ✗ CTT store photo failed to upload');
     }catch(e){ log('err','  ✗ CTT store photo error: '+e.message); }
     var xml=buildEbayXml(l,hostedUrls).replace('TOKEN_PLACEHOLDER',token);
-  console.log('FULL XML:', xml);
     try{
       var result=await callEbayApi(xml);
       if(result.success){ l.ebayStatus='Posted'; log('ok','  ✓ Item ID: '+result.itemId); ok++; }
       else{ l.ebayStatus='Error: '+result.error; log('err','  ✗ '+result.error); err++; }
     }catch(e){ l.ebayStatus='Error: '+e.message; log('err','  ✗ '+e.message); err++; }
-    // Update just the status badge on the card
-    var flags=document.getElementById('lcard_'+i)&&document.getElementById('lcard_'+i).querySelector('.flags-row');
-    if(flags) onTitleInput(listings.indexOf(l),l.genTitle);
+    // Update card status badge
+    var lIdx=listings.indexOf(l);
+    if(lIdx!==-1){ var flags=document.getElementById('lcard_'+lIdx)&&document.getElementById('lcard_'+lIdx).querySelector('.flags-row'); if(flags) onTitleInput(lIdx,l.genTitle); }
   }
   updateProgress(sel.length,sel.length,'Complete!');
   document.getElementById('resultsWrap').style.display='block';
@@ -1021,7 +1028,7 @@ function buildEbayXml(l,imageUrls){
     +'  <RequesterCredentials><eBayAuthToken>TOKEN_PLACEHOLDER</eBayAuthToken></RequesterCredentials>\n'
     +'  <Item>\n'
     +'    <Title>'+xmlEsc(l.genTitle)+'</Title>\n'
-    +'    <Description><![CDATA['+l.genDesc+']]></Description>\n'
+    +'    <Description><![CDATA['+l.genDesc.replace(/\n/g,'<br>')+']]></Description>\n'
     +'    <PrimaryCategory><CategoryID>'+catId+'</CategoryID></PrimaryCategory>\n'
     +'    <StartPrice>'+(l.price||'9.99')+'</StartPrice>\n'
     +'    <CategoryMappingAllowed>true</CategoryMappingAllowed>\n'
@@ -1077,7 +1084,6 @@ async function callEbayApi(xml){
     body: JSON.stringify({ xml: xml, callName: 'AddItem' })
   });
   var text = await resp.text();
-  console.log('eBay raw response:', text);
   var ack=text.match(/<Ack>(.*?)<\/Ack>/);
   var itemId=text.match(/<ItemID>(\d+)<\/ItemID>/);
   // Get all error/warning messages
@@ -1085,7 +1091,6 @@ async function callEbayApi(xml){
   while((m=re.exec(text))!==null){ errors.push(m[1]); }
   var severities=[]; var re2=/<SeverityCode>(.*?)<\/SeverityCode>/g;
   while((m=re2.exec(text))!==null){ severities.push(m[1]); }
-  console.log('Ack:', ack&&ack[1], 'ItemID:', itemId&&itemId[1], 'Messages:', errors, 'Severities:', severities);
   if(ack&&(ack[1]==='Success'||ack[1]==='Warning')&&itemId){
     return {success:true, itemId:itemId[1], warnings:errors};
   }
@@ -1318,7 +1323,6 @@ async function qlDoPost(l, token, imgbbKey, statusEl){
     if(statusEl) statusEl.textContent='⚠ CTT store photo error: '+e.message;
   }
   if(statusEl) statusEl.textContent='📡 Sending to eBay with '+hostedUrls.length+' photo(s)…';
-  if(statusEl) console.log('hostedUrls:', hostedUrls);
   var xml=buildEbayXml(l,hostedUrls).replace('TOKEN_PLACEHOLDER',token);
   try{
     var result=await callEbayApi(xml);
