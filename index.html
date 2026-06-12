@@ -342,6 +342,26 @@ tbody td { padding: 10px 14px; color: #1B2A5E; vertical-align: middle; }
   .fchip { display: inline-flex; align-items: center; gap: 6px; background: #EDF0F7; border: 1px solid #C9CEDC; color: #1B2A5E; border-radius: 16px; padding: 4px 6px 4px 12px; font-size: 0.75rem; font-weight: 600; }
   .fchip button { background: #C9CEDC; border: none; border-radius: 50%; width: 16px; height: 16px; line-height: 1; font-size: 0.7rem; color: #1B2A5E; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
   .fchip button:hover { background: #8B1A1A; color: #fff; }
+
+  /* DETAIL MODAL */
+  .detail-modal { position: fixed; inset: 0; background: rgba(10,16,40,0.55); z-index: 9000; display: none; align-items: center; justify-content: center; padding: 1rem; }
+  .detail-modal.on { display: flex; }
+  .detail-card { background: #fff; border-radius: 12px; max-width: 420px; width: 100%; overflow: hidden; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: dpop 0.18s ease; }
+  @keyframes dpop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .detail-close { position: absolute; top: 8px; right: 10px; background: rgba(255,255,255,0.2); border: none; color: #fff; font-size: 1.3rem; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; z-index: 2; line-height: 1; }
+  .detail-close:hover { background: rgba(255,255,255,0.35); }
+  .detail-hd { background: #1B2A5E; padding: 1rem 1.2rem; }
+  .detail-num { font-size: 1.4rem; font-weight: 700; color: #fff; }
+  .detail-bd { padding: 1.2rem; }
+  .detail-name { font-size: 1.15rem; font-weight: 700; color: #1B2A5E; line-height: 1.3; margin-bottom: 8px; }
+  .detail-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+  .detail-badges:empty { display: none; }
+  .detail-badges .chase-badge, .detail-badges .size-badge, .detail-badges .pc-badge, .detail-badges .new-badge { margin-left: 0; }
+  .detail-meta { font-size: 0.9rem; color: #6B7499; margin-bottom: 12px; }
+  .detail-foot { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #E2E5ED; padding-top: 12px; }
+  .detail-foot .qty { font-size: 1rem; font-weight: 700; color: #1B2A5E; }
+  .detail-admin { margin-top: 10px; display: flex; gap: 8px; }
+  .detail-admin:empty { display: none; }
 </style>
 </head>
 <body>
@@ -416,6 +436,15 @@ tbody td { padding: 10px 14px; color: #1B2A5E; vertical-align: middle; }
         <p>Hey there! We're Captain's Treasure Trove — a New Jersey-based small business run by a fellow collector, for collectors. Whether you're hunting for that elusive Funko Pop, looking to get an item signed at an upcoming con, or just want to browse the haul — we've got you covered. Your treasure awaits!</p>
       </div>
 
+    </div>
+
+    <!-- GRAILS / FEATURED -->
+    <div class="grails" id="grailsSection" style="display:none;">
+      <div class="shows-heading">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5l3 3 3-5 3 5 3-3v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/></svg>
+        Captain's Grails — Featured Treasure
+      </div>
+      <div class="whats-new-strip" id="grailsStrip"></div>
     </div>
 
     <!-- WHAT'S NEW -->
@@ -584,6 +613,23 @@ tbody td { padding: 10px 14px; color: #1B2A5E; vertical-align: middle; }
   </div>
 
 </main>
+
+<div class="detail-modal" id="detailModal" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-card">
+    <button class="detail-close" onclick="closeDetail()">&#215;</button>
+    <div class="detail-hd"><span class="detail-num" id="dNum"></span></div>
+    <div class="detail-bd">
+      <div class="detail-name" id="dName"></div>
+      <div class="detail-badges" id="dBadges"></div>
+      <div class="detail-meta" id="dMeta"></div>
+      <div class="detail-foot">
+        <span class="avail"><span class="dot dot-g"></span>Available</span>
+        <span class="qty" id="dQty"></span>
+      </div>
+      <div class="detail-admin" id="dAdmin"></div>
+    </div>
+  </div>
+</div>
 
 <div class="lbox" id="lbox">
   <button class="lbox-x" id="lboxClose">&#x2715;</button>
@@ -931,10 +977,12 @@ function loadAll() {
       return { name: cell(r,0), number: cell(r,1), line: cell(r,2), license: cell(r,3),
                qty: parseInt(cell(r,4))||0, owner: (cell(r,5)||MY_INI).trim().toUpperCase(), added: cell(r,6),
                ebay: (cell(r,7)||'').toLowerCase().trim() === 'true',
-               size: (cell(r,8)||'').trim(), chase: (cell(r,9)||'').trim(), pieces: parseInt(cell(r,10))||0 };
+               size: (cell(r,8)||'').trim(), chase: (cell(r,9)||'').trim(), pieces: parseInt(cell(r,10))||0,
+               featured: (cell(r,11)||'').toLowerCase().trim() === 'true' };
     }).filter(function(p) { return p.name && p.qty > 0; });
 
     renderWhatsNew();
+    renderGrails();
     selOpts('invLine', unique(allPops, 'line'));
     selOpts('invLicense', unique(allPops, 'license'));
     if (isAdmin) selOpts('invOwner', unique(allPops, 'owner'));
@@ -1081,6 +1129,24 @@ function sortArr(arr, key) {
 }
 
 // INVENTORY RENDER
+function renderGrails() {
+  var sec = document.getElementById('grailsSection');
+  var strip = document.getElementById('grailsStrip');
+  if (!sec || !strip) return;
+  var picks = allPops.filter(function(p){ return p.featured; });
+  if (!picks.length) { sec.style.display = 'none'; return; }
+  strip.innerHTML = picks.map(function(p){
+    var badges = chaseBadge(p.chase) + pieceBadge(p.pieces);
+    return '<div class="wn-card" onclick="goToItem(\'' + esc(p.name).replace(/'/g, "\\'") + '\')">'
+      + '<div class="wn-num">' + (p.number ? '#' + esc(p.number) : '') + '</div>'
+      + '<div class="wn-name">' + esc(p.name) + '</div>'
+      + (badges ? '<div style="margin:3px 0;">' + badges + '</div>' : '')
+      + '<div class="wn-line">' + esc(p.line || '') + '</div>'
+      + '</div>';
+  }).join('');
+  sec.style.display = 'block';
+}
+
 function renderWhatsNew() {
   var sec = document.getElementById('whatsNewSection');
   var strip = document.getElementById('whatsNewStrip');
@@ -1166,6 +1232,30 @@ function updateFilterChips() {
   if (countEl) countEl.textContent = active.length ? ' (' + active.length + ')' : '';
 }
 
+function openDetail(i) {
+  var p = window._lastFiltered && window._lastFiltered[i];
+  if (!p) return;
+  document.getElementById('dNum').textContent = p.number ? '#' + p.number : '\u2014';
+  document.getElementById('dName').textContent = p.name;
+  document.getElementById('dBadges').innerHTML = chaseBadge(p.chase) + pieceBadge(p.pieces)
+    + (p.size ? '<span class="size-badge">' + esc(p.size) + '</span>' : '') + newBadge(p.added);
+  document.getElementById('dMeta').textContent = (p.line || '') + (p.license ? ' \u2014 ' + p.license : '');
+  document.getElementById('dQty').textContent = 'Qty: ' + p.qty;
+  var adminHtml = '';
+  if (isAdmin) {
+    adminHtml = '<span class="owner-chip ' + (isMine(p.owner)?'chip-me':'chip-other') + '">' + esc(p.owner) + '</span>'
+      + '<a class="ebay-search-btn" style="display:inline-flex;" href="' + ebaySearchUrl(p.name, p.number) + '" target="_blank" rel="noopener">&#128269; Sold</a>';
+  }
+  document.getElementById('dAdmin').innerHTML = adminHtml;
+  document.getElementById('detailModal').classList.add('on');
+}
+window.openDetail = openDetail;
+
+function closeDetail() {
+  document.getElementById('detailModal').classList.remove('on');
+}
+window.closeDetail = closeDetail;
+
 function filterInv() {
   var s = document.getElementById('invSearch').value.toLowerCase();
   var l = document.getElementById('invLine').value;
@@ -1230,14 +1320,15 @@ function ebaySearchUrl(name, number) {
 function renderInvGrid(pops) {
   var g = document.getElementById('invGrid');
   if (!pops.length) { g.innerHTML='<div class="empty empty-grid">No Pops match your search.</div>'; return; }
+  window._lastFiltered = pops;
   g.innerHTML = pops.map(function(p,i) {
-    return '<div class="pcard'+(p.ebay?' ebay-listed':' ebay-not')+'" style="animation-delay:'+Math.min(i*0.03,0.35)+'s">'
+    return '<div class="pcard'+(p.ebay?' ebay-listed':' ebay-not')+'" style="animation-delay:'+Math.min(i*0.03,0.35)+'s;cursor:pointer;" onclick="openDetail('+i+')">'
       +'<div class="pcard-hd"><span class="pcard-num">'+(p.number?'#'+esc(p.number):'—')+'</span>'
       +'<span class="owner-chip '+(isMine(p.owner)?'chip-me':'chip-other')+'">'+esc(p.owner)+'</span></div>'
       +'<div class="pcard-bd"><div class="pname">'+esc(p.name)+chaseBadge(p.chase)+pieceBadge(p.pieces)+(p.size?'<span class="size-badge">'+esc(p.size)+'</span>':'')+newBadge(p.added)+'<span class="'+(p.ebay?'ebay-yes':'ebay-no')+'" style="margin-left:5px;">'+(p.ebay?'eBay':'Not Listed')+'</span></div>'
       +'<div class="pline">'+esc(p.line||'')+(p.line&&p.license?' — ':'')+(p.license?esc(p.license):(p.line?'':'Uncategorized'))+'</div>'
       +'<div class="pfoot"><span class="avail"><span class="dot dot-g"></span>Available</span>'
-      +'<span style="display:flex;align-items:center;gap:6px;"><span class="qty">Qty: '+p.qty+'</span><a class="ebay-search-btn" href="'+ebaySearchUrl(p.name,p.number)+'" target="_blank" rel="noopener">&#128269; Sold</a></span></div></div></div>';
+      +'<span style="display:flex;align-items:center;gap:6px;"><span class="qty">Qty: '+p.qty+'</span><a class="ebay-search-btn" href="'+ebaySearchUrl(p.name,p.number)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">&#128269; Sold</a></span></div></div></div>';
   }).join('');
 }
 function renderInvList(pops) {
