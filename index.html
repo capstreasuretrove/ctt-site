@@ -315,6 +315,14 @@ tbody td { padding: 10px 14px; color: #1B2A5E; vertical-align: middle; }
   .pc-500   { background:#f6851f; }
   .pc-100   { background:#6c73b3; }
   .pc-1     { background:#f26a60; }
+
+  .whats-new { margin-bottom: 1.5rem; }
+  .whats-new-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; -webkit-overflow-scrolling: touch; }
+  .wn-card { flex: 0 0 auto; min-width: 150px; max-width: 190px; background: #fff; border: 1px solid #E2E5ED; border-radius: 8px; padding: 10px 12px; cursor: pointer; }
+  .wn-card:hover { box-shadow: 0 4px 12px rgba(27,42,94,0.12); }
+  .wn-num { font-size: 0.65rem; font-weight: 700; color: #8B1A1A; }
+  .wn-name { font-size: 0.8rem; font-weight: 600; color: #1B2A5E; line-height: 1.3; margin: 2px 0; }
+  .wn-line { font-size: 0.68rem; color: #6B7499; }
 </style>
 </head>
 <body>
@@ -389,6 +397,15 @@ tbody td { padding: 10px 14px; color: #1B2A5E; vertical-align: middle; }
         <p>Hey there! We're Captain's Treasure Trove — a New Jersey-based small business run by a fellow collector, for collectors. Whether you're hunting for that elusive Funko Pop, looking to get an item signed at an upcoming con, or just want to browse the haul — we've got you covered. Your treasure awaits!</p>
       </div>
 
+    </div>
+
+    <!-- WHAT'S NEW -->
+    <div class="whats-new" id="whatsNewSection" style="display:none;">
+      <div class="shows-heading">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polygon points="8,1 10,6 15,6 11,9.5 12.5,15 8,11.8 3.5,15 5,9.5 1,6 6,6"/></svg>
+        Fresh Treasure — Recently Added
+      </div>
+      <div class="whats-new-strip" id="whatsNewStrip"></div>
     </div>
 
     <!-- VENDING SHOWS -->
@@ -693,6 +710,7 @@ makeToggle('orderGrid', 'orderList', 'orderBtnGrid', 'orderBtnList');
 // Search/filter listeners
 document.getElementById('invSearch').addEventListener('input', filterInv);
   var invNewOnlyEl = document.getElementById('invNewOnly'); if (invNewOnlyEl) invNewOnlyEl.addEventListener('change', filterInv);
+  var invBadgeEl = document.getElementById('invBadge'); if (invBadgeEl) invBadgeEl.addEventListener('change', filterInv);
 document.getElementById('invLine').addEventListener('change', filterInv);
 document.getElementById('invOwner').addEventListener('change', filterInv);
 document.getElementById('autoSearch').addEventListener('input', filterAuto);
@@ -884,6 +902,7 @@ function loadAll() {
                size: (cell(r,8)||'').trim(), chase: (cell(r,9)||'').trim(), pieces: parseInt(cell(r,10))||0 };
     }).filter(function(p) { return p.name && p.qty > 0; });
 
+    renderWhatsNew();
     selOpts('invLine', unique(allPops, 'line'));
     selOpts('invLicense', unique(allPops, 'license'));
     if (isAdmin) selOpts('invOwner', unique(allPops, 'owner'));
@@ -1030,6 +1049,38 @@ function sortArr(arr, key) {
 }
 
 // INVENTORY RENDER
+function renderWhatsNew() {
+  var sec = document.getElementById('whatsNewSection');
+  var strip = document.getElementById('whatsNewStrip');
+  if (!sec || !strip) return;
+  var fresh = allPops.filter(function(p){ return isNew(p.added); });
+  if (!fresh.length) { sec.style.display = 'none'; return; }
+  // Most recent first, cap at 12
+  fresh.sort(function(a,b){ return new Date(b.added) - new Date(a.added); });
+  fresh = fresh.slice(0, 12);
+  strip.innerHTML = fresh.map(function(p){
+    return '<div class="wn-card" onclick="goToItem(\'' + esc(p.name).replace(/'/g, "\\'") + '\')">'
+      + '<div class="wn-num">' + (p.number ? '#' + esc(p.number) : '') + '</div>'
+      + '<div class="wn-name">' + esc(p.name) + '</div>'
+      + '<div class="wn-line">' + esc(p.line || '') + '</div>'
+      + '</div>';
+  }).join('');
+  sec.style.display = 'block';
+}
+
+function goToItem(name) {
+  // Switch to In Stock tab and search for the item
+  document.querySelectorAll('.page-tab').forEach(function(x){ x.classList.remove('on'); });
+  document.querySelectorAll('.section').forEach(function(x){ x.classList.remove('on'); });
+  document.querySelector('[data-tab="inv"]').classList.add('on');
+  document.getElementById('secInv').classList.add('on');
+  var search = document.getElementById('invSearch');
+  search.value = name;
+  filterInv();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+window.goToItem = goToItem;
+
 function filterInv() {
   var s = document.getElementById('invSearch').value.toLowerCase();
   var l = document.getElementById('invLine').value;
@@ -1046,6 +1097,11 @@ function filterInv() {
   });
   var newOnlyEl = document.getElementById('invNewOnly');
   var newOnly = newOnlyEl ? newOnlyEl.checked : false;
+  var badgeEl = document.getElementById('invBadge');
+  var badge = badgeEl ? badgeEl.value : '';
+  if (badge === 'chase') f = f.filter(function(p){ var c=(p.chase||'').toLowerCase(); return c && c !== 'limited edition'; });
+  else if (badge === 'le') f = f.filter(function(p){ return (p.chase||'').toLowerCase() === 'limited edition'; });
+  else if (badge === 'size') f = f.filter(function(p){ return p.size; });
   if (newOnly) f = f.filter(function(p){ return isNew(p.added); });
   f = sortArr(f, document.getElementById('invSort').value);
   document.getElementById('invCount').textContent = f.length + ' pop' + (f.length!==1?'s':'') + ' found';
