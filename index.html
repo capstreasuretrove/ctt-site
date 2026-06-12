@@ -446,7 +446,7 @@ tbody td { padding: 10px 14px; color: #1B2A5E; vertical-align: middle; }
       <select id="invOwner" class="admin-filter"><option value="">All Owners</option></select>
       <select id="invConsign" class="admin-filter"><option value="">My + Consignment</option><option value="consign">Consignment Only</option></select>
       <select id="invEbay" class="admin-filter"><option value="">eBay: All</option><option value="yes">Listed on eBay</option><option value="no">Not Listed</option></select>
-      <select id="invSort"><option value="name-az">Name: A-Z</option><option value="name-za">Name: Z-A</option><option value="line-az" selected>Line: A-Z</option><option value="line-za">Line: Z-A</option><option value="license-az">License: A-Z</option><option value="license-za">License: Z-A</option></select><span class="rcount" id="invCount"></span>
+      <select id="invSort"><option value="name-az">Name: A-Z</option><option value="name-za">Name: Z-A</option><option value="line-az" selected>Line: A-Z</option><option value="line-za">Line: Z-A</option><option value="license-az">License: A-Z</option><option value="license-za">License: Z-A</option><option value="pieces-asc">Pieces: Low to High</option><option value="pieces-desc">Pieces: High to Low</option></select><span class="rcount" id="invCount"></span>
       <div class="vtoggle">
         <button class="vbtn on" id="invBtnGrid" title="Gallery">
           <svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
@@ -766,6 +766,15 @@ function fetchTab(tab, cb) {
 }
 
 // Load all data
+function daysUntil(d) {
+  if (!d) return null;
+  var m = String(d).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  var target = new Date(parseInt(m[1]), parseInt(m[2])-1, parseInt(m[3]));
+  var now = new Date(); now.setHours(0,0,0,0);
+  return Math.round((target - now) / 86400000);
+}
+
 function fmtDate(d) {
   if (!d) return '';
   var s = String(d).trim();
@@ -805,7 +814,15 @@ function showCard(s, isVending, isPast) {
     if (s.loc)   meta += '<span>&#128205; ' + esc(s.loc) + '</span>';
     if (s.notes) meta += '<span>&#11088; ' + esc(s.notes) + '</span>';
   } else {
-    if (s.due)    meta += '<span>&#128197; Due: ' + fmtDate(s.due) + '</span>';
+    if (s.due) {
+      meta += '<span>&#128197; Due: ' + fmtDate(s.due) + '</span>';
+      var dd = daysUntil(s.due);
+      if (dd !== null && dd >= 0 && !isPast) {
+        var urgent = dd <= 7;
+        var txt = dd === 0 ? 'Due TODAY!' : dd === 1 ? '1 day left!' : dd + ' days left' + (urgent ? '!' : '');
+        meta += '<span style="color:' + (urgent ? '#ffb3b3' : 'rgba(255,255,255,0.85)') + ';font-weight:700;">&#9203; ' + txt + '</span>';
+      }
+    }
     if (s.guests) meta += '<span>&#11088; ' + esc(s.guests) + '</span>';
   }
   var action = '';
@@ -985,6 +1002,17 @@ function etaScore(eta) {
 
 function sortArr(arr, key) {
   if (!key) return arr;
+  if (key === 'pieces-asc' || key === 'pieces-desc') {
+    var pmult = key === 'pieces-desc' ? -1 : 1;
+    return arr.slice().sort(function(a,b) {
+      // Items without piece counts go last in both directions
+      var ap = a.pieces || 0, bp = b.pieces || 0;
+      if (!ap && !bp) return 0;
+      if (!ap) return 1;
+      if (!bp) return -1;
+      return (ap - bp) * pmult;
+    });
+  }
   if (key === 'eta-asc' || key === 'eta-desc') {
     var mult = key === 'eta-desc' ? -1 : 1;
     return arr.slice().sort(function(a,b) {
