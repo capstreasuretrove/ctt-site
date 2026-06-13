@@ -386,6 +386,30 @@ tbody td { padding: 10px 14px; color: #1B2A5E; vertical-align: middle; }
   .terms-stamp { background: #F5EDD8; border: 2px dashed #D4C090; border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; font-weight: 700; color: #2a1f0e; text-align: center; margin-top: 10px; }
   .si-contact { text-align: center; margin: 2rem 0 1rem; }
   .si-contact p { font-size: 0.95rem; font-weight: 600; color: #1B2A5E; margin-bottom: 10px; }
+
+  .ann-badge { display:inline-block; font-size:0.62rem; font-weight:700; padding:2px 7px; border-radius:3px; letter-spacing:0.04em; margin-left:6px; vertical-align:middle; }
+  .ann-yes { background:#EAF5EE; color:#1A6B3A; }
+  .ann-no  { background:#FDECEA; color:#8B1A1A; }
+
+  /* STATS DASHBOARD */
+  .stats-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 10px; }
+  .stats-title { font-size: 1.2rem; font-weight: 700; color: #1B2A5E; margin: 0; }
+  .stats-toggle-btn { padding: 8px 16px; background: #1B2A5E; color: #fff; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; letter-spacing: 0.03em; }
+  .stats-toggle-btn:hover { background: #2a3d7a; }
+  .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+  .stat-card { background: #fff; border: 1px solid #E2E5ED; border-radius: 10px; padding: 1rem; text-align: center; }
+  .stat-num { font-size: 1.8rem; font-weight: 700; color: #1B2A5E; line-height: 1; }
+  .stat-lbl { font-size: 0.72rem; color: #6B7499; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 6px; font-weight: 600; }
+  .stat-section { background: #fff; border: 1px solid #E2E5ED; border-radius: 10px; padding: 1.2rem; margin-bottom: 1rem; }
+  .stat-section-title { font-size: 0.8rem; font-weight: 700; color: #1B2A5E; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.9rem; }
+  .stat-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; font-size: 0.85rem; border-bottom: 1px solid #F0F2F6; }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row-name { color: #333; }
+  .stat-row-val { font-weight: 700; color: #1B2A5E; }
+  .stat-bar-row { margin: 7px 0; }
+  .stat-bar-label { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 3px; }
+  .stat-bar-track { background: #EDF0F7; border-radius: 4px; height: 16px; overflow: hidden; }
+  .stat-bar-fill { background: #1B2A5E; height: 100%; border-radius: 4px; transition: width 0.4s; }
 </style>
 </head>
 <body>
@@ -432,6 +456,10 @@ tbody td { padding: 10px 14px; color: #1B2A5E; vertical-align: middle; }
   <div class="page-tab on"  id="tabInv"  data-tab="inv">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
     In Stock
+  </div>
+  <div class="page-tab" id="tabStats" data-tab="stats" style="display:none;">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="14" x2="2" y2="9"/><line x1="6" y1="14" x2="6" y2="5"/><line x1="10" y1="14" x2="10" y2="7"/><line x1="14" y1="14" x2="14" y2="2"/></svg>
+    Stats
   </div>
   <div class="page-tab" id="tabAuto" data-tab="auto">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14 L5 11 L11 5 L13 3 Q14 2 15 3 Q16 4 15 5 L13 7 L7 13 Z"/><line x1="11" y1="5" x2="13" y2="7"/></svg>
@@ -528,6 +556,15 @@ tbody td { padding: 10px 14px; color: #1B2A5E; vertical-align: middle; }
       </div>
     </div>
 
+  </div>
+
+  <!-- STATS DASHBOARD (admin only) -->
+  <div class="section" id="secStats">
+    <div class="stats-toolbar">
+      <h2 class="stats-title">&#9875; Inventory at a Glance</h2>
+      <button class="stats-toggle-btn" id="statsViewBtn" onclick="toggleStatsView()">Show Charts</button>
+    </div>
+    <div id="statsBody"></div>
   </div>
 
   <!-- SEND-INS -->
@@ -828,6 +865,8 @@ function grantAdmin() {
   document.getElementById('mainWrap').classList.add('admin-on');
   var ot = document.getElementById('tabOrder');
   if (ot) ot.style.display = 'flex';
+  var st = document.getElementById('tabStats');
+  if (st) st.style.display = 'flex';
 }
 
 function grantConsignee(key) {
@@ -872,9 +911,10 @@ document.querySelectorAll('.page-tab').forEach(function(tab) {
     document.querySelectorAll('.page-tab').forEach(function(x) { x.classList.remove('on'); });
     document.querySelectorAll('.section').forEach(function(x) { x.classList.remove('on'); });
     this.classList.add('on');
-    var secMap = { home: 'secHome', inv: 'secInv', auto: 'secAuto', order: 'secOrder', sendins: 'secSendins' };
+    var secMap = { home: 'secHome', inv: 'secInv', stats: 'secStats', auto: 'secAuto', order: 'secOrder', sendins: 'secSendins' };
     var secEl = document.getElementById(secMap[t]);
     if (secEl) secEl.classList.add('on');
+    if (t === 'stats' && typeof renderStats === 'function') renderStats();
   });
 });
 
@@ -1192,7 +1232,7 @@ function loadAll() {
     hide('loadOrder');
     if (err) { showErr('errOrder', 'Could not load on-order tab.'); return; }
     allOrders = rows.map(function(r) {
-      return { name: cell(r,0), number: cell(r,1), line: cell(r,2), license: cell(r,3), qty: parseInt(cell(r,4))||0, eta: cell(r,5) };
+      return { name: cell(r,0), number: cell(r,1), line: cell(r,2), license: cell(r,3), qty: parseInt(cell(r,4))||0, eta: cell(r,5), announced: (cell(r,6)||'').toLowerCase().trim() === 'true' };
     }).filter(function(o) { return o.name; });
     selOpts('orderLine', unique(allOrders, 'line'));
     selOpts('orderLicense', unique(allOrders, 'license'));
@@ -1428,6 +1468,84 @@ function closeDetail() {
 }
 window.closeDetail = closeDetail;
 
+var statsShowCharts = false;
+
+function toggleStatsView() {
+  statsShowCharts = !statsShowCharts;
+  document.getElementById('statsViewBtn').textContent = statsShowCharts ? 'Show Numbers' : 'Show Charts';
+  renderStats();
+}
+window.toggleStatsView = toggleStatsView;
+
+function countBy(arr, key) {
+  var map = {};
+  arr.forEach(function(p){ var k = (p[key]||'Uncategorized').toString().trim() || 'Uncategorized'; map[k] = (map[k]||0) + 1; });
+  return Object.keys(map).map(function(k){ return [k, map[k]]; }).sort(function(a,b){ return b[1]-a[1]; });
+}
+
+function renderStats() {
+  var body = document.getElementById('statsBody');
+  if (!body) return;
+
+  var totalItems = allPops.length;
+  var totalUnits = allPops.reduce(function(s,p){ return s + (p.qty||0); }, 0);
+  var lines = unique(allPops, 'line').length;
+  var licenses = unique(allPops, 'license').length;
+  var mine = allPops.filter(function(p){ return isMine(p.owner); });
+  var consign = allPops.filter(function(p){ return !isMine(p.owner); });
+  var listed = allPops.filter(function(p){ return p.ebay; }).length;
+  var chases = allPops.filter(function(p){ var c=(p.chase||'').toLowerCase(); return c && c!=='limited edition'; }).length;
+  var les = allPops.filter(function(p){ return (p.chase||'').toLowerCase()==='limited edition'; }).length;
+  var newCount = allPops.filter(function(p){ return isNew(p.added); }).length;
+  var lastOnes = allPops.filter(function(p){ return p.qty === 1; }).length;
+
+  // Top-line cards
+  var cards = [
+    [totalItems, 'Unique Items'],
+    [totalUnits, 'Total Units'],
+    [lines, 'Lines'],
+    [licenses, 'Licenses'],
+    [mine.length, 'My Items'],
+    [consign.length, 'Consignment'],
+    [listed, 'On eBay'],
+    [chases, 'Chases'],
+    [les, 'Limited Eds'],
+    [newCount, 'New (30d)'],
+    [lastOnes, 'Last One!'],
+  ];
+  var cardsHtml = '<div class="stat-cards">' + cards.map(function(c){
+    return '<div class="stat-card"><div class="stat-num">' + c[0] + '</div><div class="stat-lbl">' + c[1] + '</div></div>';
+  }).join('') + '</div>';
+
+  // Breakdowns
+  var byLine = countBy(allPops, 'line');
+  var byLicense = countBy(allPops, 'license').slice(0, 15);
+  var byOwner = countBy(allPops, 'owner');
+
+  function renderBreakdown(title, data) {
+    var max = data.length ? data[0][1] : 1;
+    var rows;
+    if (statsShowCharts) {
+      rows = data.map(function(d){
+        var pct = Math.round((d[1]/max)*100);
+        return '<div class="stat-bar-row"><div class="stat-bar-label"><span>' + esc(d[0]) + '</span><span>' + d[1] + '</span></div>'
+          + '<div class="stat-bar-track"><div class="stat-bar-fill" style="width:' + pct + '%;"></div></div></div>';
+      }).join('');
+    } else {
+      rows = data.map(function(d){
+        return '<div class="stat-row"><span class="stat-row-name">' + esc(d[0]) + '</span><span class="stat-row-val">' + d[1] + '</span></div>';
+      }).join('');
+    }
+    return '<div class="stat-section"><div class="stat-section-title">' + title + '</div>' + rows + '</div>';
+  }
+
+  body.innerHTML = cardsHtml
+    + renderBreakdown('By Line', byLine)
+    + renderBreakdown('By License (Top 15)', byLicense)
+    + renderBreakdown('By Owner', byOwner);
+}
+window.renderStats = renderStats;
+
 function filterInv() {
   var s = document.getElementById('invSearch').value.toLowerCase();
   var l = document.getElementById('invLine').value;
@@ -1615,7 +1733,7 @@ function renderOrderGrid(orders) {
     return '<div class="ocard" style="animation-delay:'+Math.min(i*0.03,0.35)+'s">'
       +'<div class="ocard-hd"><span class="ocard-num">'+(o.number?'#'+esc(o.number):'—')+'</span>'
       +'<span class="cs-badge">Coming Soon</span></div>'
-      +'<div class="ocard-bd"><div class="pname">'+esc(o.name)+'</div>'
+      +'<div class="ocard-bd"><div class="pname">'+esc(o.name)+(o.announced?'<span class="ann-badge ann-yes">&#128226; Public</span>':'<span class="ann-badge ann-no">&#128274; Embargo</span>')+'</div>'
       +'<div class="pline">'+esc(o.line||'')+(o.line&&o.license?' — ':'')+(o.license?esc(o.license):(o.line?'':'Uncategorized'))+'</div>'
       +'<div class="ocard-ft"><span class="eta">Est. Arrival: <span class="eta-val">'+(o.eta?(o.eta.toUpperCase()==='SOON'||o.eta.toUpperCase()==='TBA'?esc(o.eta):esc(o.eta)+'*'):'TBA')+'</span></span>'
       +'<span class="qty" style="color:#A07010;">'+(o.qty?'Qty: '+o.qty:'')+'</span></div>'
@@ -1629,7 +1747,7 @@ function renderOrderList(orders) {
   b.innerHTML = orders.map(function(o,i) {
     return '<tr style="animation-delay:'+Math.min(i*0.02,0.3)+'s">'
       +'<td class="td-num">'+(o.number?'#'+esc(o.number):'—')+'</td>'
-      +'<td class="td-bold">'+esc(o.name)+'</td>'
+      +'<td class="td-bold">'+esc(o.name)+(o.announced?'<span class="ann-badge ann-yes">&#128226; Public</span>':'<span class="ann-badge ann-no">&#128274; Embargo</span>')+'</td>'
       +'<td class="td-mute">'+esc(o.line||'—')+'</td>'+'<td class="td-mute">'+esc(o.license||'—')+'</td>'
       +'<td class="qty" style="color:#A07010;">'+o.qty+'</td>'
       +'<td class="td-eta">'+(o.eta?(o.eta.toUpperCase()==='SOON'||o.eta.toUpperCase()==='TBA'?esc(o.eta):esc(o.eta)+'*'):'TBA')+'</td>'
