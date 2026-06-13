@@ -998,8 +998,10 @@ function loadAll() {
                signedBy: cell(r,4), auth: cell(r,5), qty: parseInt(cell(r,6))||0,
                status: (cell(r,7)||'available').toLowerCase().trim(),
                added: cell(r,8),
-               images: [driveUrl(cell(r,9)),driveUrl(cell(r,10)),driveUrl(cell(r,11)),driveUrl(cell(r,12)),driveUrl(cell(r,13))].filter(Boolean) };
+               images: [driveUrl(cell(r,9)),driveUrl(cell(r,10)),driveUrl(cell(r,11)),driveUrl(cell(r,12)),driveUrl(cell(r,13))].filter(Boolean),
+               featured: (cell(r,14)||'').toLowerCase().trim() === 'true' };
     }).filter(function(a) { return a.name; });
+    renderGrails();
     selOpts('autoLine', unique(allAutos, 'line'));
     selOpts('autoLicense', unique(allAutos, 'license'));
     filterAuto();
@@ -1133,9 +1135,10 @@ function renderGrails() {
   var sec = document.getElementById('grailsSection');
   var strip = document.getElementById('grailsStrip');
   if (!sec || !strip) return;
-  var picks = allPops.filter(function(p){ return p.featured; });
-  if (!picks.length) { sec.style.display = 'none'; return; }
-  strip.innerHTML = picks.map(function(p){
+  var pops  = allPops.filter(function(p){ return p.featured; });
+  var autos = allAutos.filter(function(a){ return a.featured; });
+  if (!pops.length && !autos.length) { sec.style.display = 'none'; return; }
+  var popCards = pops.map(function(p){
     var badges = chaseBadge(p.chase) + pieceBadge(p.pieces);
     return '<div class="wn-card" onclick="goToItem(\'' + esc(p.name).replace(/'/g, "\\'") + '\')">'
       + '<div class="wn-num">' + (p.number ? '#' + esc(p.number) : '') + '</div>'
@@ -1144,8 +1147,28 @@ function renderGrails() {
       + '<div class="wn-line">' + esc(p.line || '') + '</div>'
       + '</div>';
   }).join('');
+  var autoCards = autos.map(function(a){
+    return '<div class="wn-card" onclick="goToAuto(\'' + esc(a.name).replace(/'/g, "\\'") + '\')">'
+      + '<div class="wn-num">' + (a.number ? '#' + esc(a.number) : '') + '</div>'
+      + '<div class="wn-name">' + esc(a.name) + '</div>'
+      + '<div style="margin:3px 0;"><span class="auth-badge">&#9997; Signed by ' + esc(a.signedBy || '') + '</span></div>'
+      + '<div class="wn-line">' + esc(a.line || '') + '</div>'
+      + '</div>';
+  }).join('');
+  strip.innerHTML = popCards + autoCards;
   sec.style.display = 'block';
 }
+
+function goToAuto(name) {
+  document.querySelectorAll('.page-tab').forEach(function(x){ x.classList.remove('on'); });
+  document.querySelectorAll('.section').forEach(function(x){ x.classList.remove('on'); });
+  document.querySelector('[data-tab="auto"]').classList.add('on');
+  document.getElementById('secAuto').classList.add('on');
+  var search = document.getElementById('autoSearch');
+  if (search) { search.value = name; filterAuto(); }
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+window.goToAuto = goToAuto;
 
 function renderWhatsNew() {
   var sec = document.getElementById('whatsNewSection');
