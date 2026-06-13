@@ -1116,7 +1116,7 @@ function renderShowAlert() {
   if (liveShow) {
     el.className = 'show-alert on live';
     el.innerHTML = '\u2693 We\'re at <strong>' + esc(liveShow.name) + '</strong> today! Come visit our table' + (liveShow.loc ? ' at ' + esc(liveShow.loc) : '') + '!';
-  } else if (nextShow && nextDays <= 14) {
+  } else if (nextShow && nextDays <= 30) {
     el.className = 'show-alert on soon';
     var dayTxt = nextDays === 0 ? 'tomorrow' : nextDays === 1 ? 'in 1 day' : 'in ' + nextDays + ' days';
     el.innerHTML = '\uD83D\uDCC5 Next show ' + dayTxt + ': <strong>' + esc(nextShow.name) + '</strong>' + (nextShow.loc ? ' \u2014 ' + esc(nextShow.loc) : '') + '!';
