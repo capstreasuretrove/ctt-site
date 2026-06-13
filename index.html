@@ -1,4 +1,8 @@
 
+  <button class="nav-btn" id="darkToggle" onclick="toggleDark()" title="Toggle dark mode" style="cursor:pointer;">
+    <svg id="darkIcon" width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 7 7 5.5 5.5 0 0 1-7-7z"/></svg>
+    <span id="darkLabel">Dark</span>
+  </button>
     <div class="consignee-summary" id="consigneeSummary" style="display:none;"></div><!DOCTYPE html>
 <html lang="en">
 <head>
@@ -425,6 +429,32 @@ tbody td { padding: 10px 14px; color: #1B2A5E; vertical-align: middle; }
   .show-alert.live { background: #1A6B3A; color: #fff; animation: pulse-live 2s ease-in-out infinite; }
   .show-alert.soon { background: #F5EDD8; color: #2a1f0e; border: 2px solid #D4C090; }
   @keyframes pulse-live { 0%,100% { box-shadow: 0 0 0 0 rgba(26,107,58,0.4); } 50% { box-shadow: 0 0 0 8px rgba(26,107,58,0); } }
+
+  /* DARK MODE */
+  body.dark { background: #0f1320; }
+  body.dark .page-tabs { background: #161b2e; border-bottom-color: #2a3148; }
+  body.dark .page-tab { color: #9aa3bd; }
+  body.dark .page-tab.on { color: #fff; }
+  body.dark .wrap, body.dark main { background: transparent; }
+  body.dark .pcard, body.dark .acard, body.dark .ocard, body.dark .stat-card, body.dark .stat-section,
+  body.dark .si-extra, body.dark .orders-list li, body.dark .wn-card, body.dark .show-card,
+  body.dark .filter-panel, body.dark .detail-card { background: #1a2036; border-color: #2a3148; color: #d8def0; }
+  body.dark .pname, body.dark .detail-name, body.dark .wn-name, body.dark .stat-num, body.dark .stats-title,
+  body.dark .show-name, body.dark .stat-section-title, body.dark .stat-row-val { color: #e8ecf8; }
+  body.dark .pline, body.dark .td-mute, body.dark .stat-lbl, body.dark .stat-row-name, body.dark .detail-meta,
+  body.dark .wn-line, body.dark .show-meta { color: #9aa3bd; }
+  body.dark .toolbar, body.dark .stats-toolbar { background: transparent; }
+  body.dark input, body.dark select { background: #1a2036; border-color: #2a3148; color: #d8def0; }
+  body.dark .stat-bar-track { background: #2a3148; }
+  body.dark .stat-row { border-bottom-color: #2a3148; }
+  body.dark .listtable, body.dark .listtable td { background: #1a2036; color: #d8def0; border-color: #2a3148; }
+  body.dark .listtable th { background: #161b2e; color: #9aa3bd; }
+  body.dark .filter-btn { background: #1a2036; border-color: #2a3148; color: #d8def0; }
+  body.dark .fchip { background: #2a3148; border-color: #3a4258; color: #d8def0; }
+  body.dark .bio-card { background: #2a2418; border-color: #4a4028; }
+  body.dark .bio-text { color: #e8dcc0; }
+  body.dark .detail-hd { background: #0f1320; }
+  body.dark .nav-btn { color: #d8def0; }
 </style>
 </head>
 <body>
@@ -1474,6 +1504,26 @@ function goToItem(name) {
 }
 window.goToItem = goToItem;
 
+function toggleDark() {
+  document.body.classList.toggle('dark');
+  var on = document.body.classList.contains('dark');
+  try { localStorage.setItem('ctt_dark', on ? '1' : '0'); } catch(e) {}
+  var lbl = document.getElementById('darkLabel');
+  if (lbl) lbl.textContent = on ? 'Light' : 'Dark';
+}
+window.toggleDark = toggleDark;
+
+// Apply saved dark preference on load
+(function() {
+  try {
+    if (localStorage.getItem('ctt_dark') === '1') {
+      document.body.classList.add('dark');
+      var lbl = document.getElementById('darkLabel');
+      if (lbl) lbl.textContent = 'Light';
+    }
+  } catch(e) {}
+})();
+
 function toggleFilterPanel() {
   var panel = document.getElementById('invFilterPanel');
   var btn = document.getElementById('invFilterBtn');
@@ -1632,7 +1682,21 @@ function renderStats() {
   }).join('');
   var agingHtml = '<div class="stat-section"><div class="stat-section-title">Oldest Inventory (Top 20 by Days Held)</div>' + (agingRows || '<div class="stat-row">No dated items.</div>') + '</div>';
 
+  // Duplicate finder — same name+number+chase appearing more than once
+  var dupMap = {};
+  allPops.forEach(function(p){
+    var key = (p.name||'').toLowerCase().trim() + '|' + (p.number||'').toLowerCase().trim() + '|' + (p.chase||'').toLowerCase().trim();
+    (dupMap[key] = dupMap[key] || []).push(p);
+  });
+  var dups = Object.keys(dupMap).filter(function(k){ return dupMap[k].length > 1; }).map(function(k){ return dupMap[k]; });
+  var dupRows = dups.map(function(group){
+    var p = group[0];
+    return '<div class="stat-row"><span class="stat-row-name">' + (p.number?'#'+esc(p.number)+' ':'') + esc(p.name) + (p.chase?' ['+esc(p.chase)+']':'') + '</span><span class="stat-row-val" style="color:#8B1A1A;">' + group.length + '\u00d7</span></div>';
+  }).join('');
+  var dupHtml = '<div class="stat-section"><div class="stat-section-title">&#9888; Possible Duplicates (' + dups.length + ')</div>' + (dupRows || '<div class="stat-row" style="color:#1A6B3A;">No duplicates found \u2014 clean sheet!</div>') + '</div>';
+
   body.innerHTML = cardsHtml
+    + dupHtml
     + agingHtml
     + renderBreakdown('By Line', byLine)
     + renderBreakdown('By License (Top 15)', byLicense)
