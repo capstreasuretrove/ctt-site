@@ -362,6 +362,30 @@ tbody td { padding: 10px 14px; color: #1B2A5E; vertical-align: middle; }
   .detail-foot .qty { font-size: 1rem; font-weight: 700; color: #1B2A5E; }
   .detail-admin { margin-top: 10px; display: flex; gap: 8px; }
   .detail-admin:empty { display: none; }
+
+  /* SEND-INS PAGE */
+  .si-heading { font-size: 0.9rem; font-weight: 700; color: #1B2A5E; text-transform: uppercase; letter-spacing: 0.08em; margin: 1.5rem 0 0.75rem; padding-bottom: 0.4rem; border-bottom: 2px solid #E2E5ED; }
+  .tier-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .tier-card { border-radius: 8px; padding: 14px; color: #fff; }
+  .tier-1 { background: #1B2A5E; }
+  .tier-2 { background: #1A6B3A; }
+  .tier-3 { background: #b07d10; }
+  .tier-4 { background: #8B1A1A; }
+  .tier-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.85; margin-bottom: 5px; }
+  .tier-desc { font-size: 0.83rem; line-height: 1.5; }
+  .si-extras { margin-top: 10px; }
+  .si-extra { background: #fff; border: 1px solid #E2E5ED; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; font-size: 0.85rem; color: #444; line-height: 1.5; }
+  .orders-due { background: #FDECEA; border: 2px solid #8B1A1A; border-radius: 8px; padding: 10px 14px; font-size: 0.88rem; color: #8B1A1A; font-weight: 600; margin-bottom: 12px; }
+  .orders-list { margin: 0 0 12px; padding-left: 1.3rem; }
+  .orders-list li { background: #fff; border: 1px solid #E2E5ED; border-radius: 8px; padding: 10px 14px; margin-bottom: 7px; font-size: 0.87rem; color: #333; list-style-position: inside; }
+  .pay-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .pay-pill { background: #1B2A5E; color: #fff; border-radius: 20px; padding: 6px 16px; font-size: 0.8rem; font-weight: 700; }
+  .pay-pill small { font-weight: 400; opacity: 0.8; }
+  .terms-list { margin: 0.5rem 0; padding-left: 1.2rem; }
+  .terms-list li { font-size: 0.83rem; color: #555; line-height: 1.6; margin-bottom: 7px; }
+  .terms-stamp { background: #F5EDD8; border: 2px dashed #D4C090; border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; font-weight: 700; color: #2a1f0e; text-align: center; margin-top: 10px; }
+  .si-contact { text-align: center; margin: 2rem 0 1rem; }
+  .si-contact p { font-size: 0.95rem; font-weight: 600; color: #1B2A5E; margin-bottom: 10px; }
 </style>
 </head>
 <body>
@@ -414,10 +438,13 @@ tbody td { padding: 10px 14px; color: #1B2A5E; vertical-align: middle; }
     Autographs
     
   </div>
-  <div class="page-tab" id="tabOrder" data-tab="order">
+  <div class="page-tab" id="tabSendins" data-tab="sendins">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 7v6a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V7"/><path d="M1 7a3.5 3.5 0 0 1 3.5-3.5H12V7"/><path d="M12 3.5h1.5a1.5 1.5 0 0 1 0 3H12"/><line x1="12" y1="1" x2="12" y2="3.5"/><line x1="12" y1="1" x2="15" y2="1"/></svg>
+    Send-Ins
+  </div>
+  <div class="page-tab" id="tabOrder" data-tab="order" style="display:none;">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="8"/><line x1="8" y1="8" x2="10.5" y2="10.5"/></svg>
     On Order
-    
   </div>
 </div>
 
@@ -490,6 +517,7 @@ tbody td { padding: 10px 14px; color: #1B2A5E; vertical-align: middle; }
         </div>
         <div class="sendin-banner">
           &#9997; Send your items in to get signed by your favorite stars! Hit <strong>Message Us</strong> on any show below to reach out for pricing, deadlines, and details.
+          <div style="margin-top:8px;"><a class="msg-btn" href="javascript:void(0)" onclick="goToSendins()" style="background:#fff;color:#1B2A5E;">&#128235; More Info</a></div>
         </div>
         <div id="sendInShows"><div class="no-shows-block">No upcoming send-in shows scheduled.</div></div>
         <button class="past-toggle-block" id="sendInPastToggle" onclick="togglePast('sendIn')" style="display:none;">
@@ -498,6 +526,105 @@ tbody td { padding: 10px 14px; color: #1B2A5E; vertical-align: middle; }
         </button>
         <div class="past-shows-list" id="sendInPast"></div>
       </div>
+    </div>
+
+  </div>
+
+  <!-- SEND-INS -->
+  <div class="section" id="secSendins">
+
+    <!-- UPCOMING SEND-IN SHOWS (duplicate of home block) -->
+    <div class="shows-block navy-block">
+      <div class="shows-block-inner">
+        <div class="shows-block-title">
+          <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 4h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/><path d="M2 4l2-3h8l2 3"/><line x1="6" y1="8" x2="10" y2="8"/></svg>
+          Upcoming Autograph Send-In Shows
+        </div>
+        <div id="sendInShows2"><div class="no-shows-block">No upcoming send-in shows scheduled.</div></div>
+        <button class="past-toggle-block" id="sendInPastToggle2" onclick="togglePast('sendIn2')" style="display:none;">
+          <svg viewBox="0 0 12 12" width="10" height="10"><polyline points="4,2 8,6 4,10"/></svg>
+          Past Send-In Shows
+        </button>
+        <div class="past-shows-list" id="sendInPast2"></div>
+      </div>
+    </div>
+
+    <!-- INTRO -->
+    <div class="bio-card">
+      <div class="bio-text">
+        <p><strong>&#128235; Send your items, we'll handle the rest!</strong><br>
+        We offer our services and time to get your favorite stuff signed by your favorite celebrities! Based in New Jersey, we attend as many cons along the east coast as we can — from D.C. to Boston. Interested in a con we're attending? Reach out!</p>
+      </div>
+    </div>
+
+    <!-- PRICING TIERS -->
+    <div class="si-heading">Pricing Tiers</div>
+    <div class="tier-grid">
+      <div class="tier-card tier-1">
+        <div class="tier-label">Tier 1</div>
+        <div class="tier-desc">Flattened standard 4&quot; Funkos, prints sized 8x10&ndash;11x17, trading cards, and other small flat items.</div>
+      </div>
+      <div class="tier-card tier-2">
+        <div class="tier-label">Tier 2</div>
+        <div class="tier-desc">Unflattened (in box) 4&quot; Funkos, 3D figures, small posters (under 24&quot;x36&quot;), and other medium flat items.</div>
+      </div>
+      <div class="tier-card tier-3">
+        <div class="tier-label">Tier 3</div>
+        <div class="tier-desc">Funkos larger than standard 4&quot; size, 24&quot;x36&quot; posters, and other larger flat items.</div>
+      </div>
+      <div class="tier-card tier-4">
+        <div class="tier-label">Tier 4</div>
+        <div class="tier-desc">10&quot;, Moment, Deluxe, Comic Cover, etc. Funkos, posters 40&quot;+, helmets, swords, and other oversized items.</div>
+      </div>
+    </div>
+    <div class="si-extras">
+      <div class="si-extra">&#10133; New Funko windows available for <strong>$5</strong> (no swaps, but we can point you to people who do)</div>
+      <div class="si-extra">&#128737; Authentication services priced at show rates, typically <strong>$10&ndash;15</strong> depending on the company</div>
+      <div class="si-extra">&#127912; Quotes &amp; character names are up to guest discretion &mdash; <strong>2 colors max, 1 quote max</strong>. Drawings/Kanji not encouraged: you can include it on your post-it but we will not request or point it out to guests</div>
+      <div class="si-extra">&#128176; Any upcharges must be paid upon request after the event &mdash; items will not ship until paid</div>
+    </div>
+
+    <!-- CAPTAIN'S ORDERS -->
+    <div class="si-heading">&#9875; Captain's Orders! (What we need from you)</div>
+    <div class="orders-due">&#9888; Everything must arrive by the <strong>DUE date</strong> for each con &mdash; often within a week of the event!</div>
+    <ol class="orders-list">
+      <li>&#128230; The item you want signed (Funkos, comics, action figures, etc.)</li>
+      <li>&#128221; Post-it on the <strong>backside</strong>: your name &amp; address</li>
+      <li>&#128221; Post-it on the <strong>frontside</strong>: what you'd like on the item (colors, quote, character name, personalization, etc.)</li>
+      <li>&#128178; Price of the autograph + authentication fee</li>
+      <li>&#129309; Consignment fee</li>
+      <li>&#128666; Return shipping payment or a return label (you buy it and send it to us)</li>
+      <li>&#128737; Highly encouraged: a protector for your item (Pop Shield Armor, top loader, etc.)</li>
+    </ol>
+    <div class="pay-pills">
+      <span class="pay-pill">PayPal <small>(F&amp;F preferred; G&amp;S you cover the fee)</small></span>
+      <span class="pay-pill">Zelle</span>
+    </div>
+
+    <!-- DISCLAIMERS ACCORDION -->
+    <button class="past-toggle" id="termsToggle" onclick="toggleTerms()" style="display:flex;">
+      <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4,2 8,6 4,10"/></svg>
+      &#9888; Important Terms &amp; Disclaimers
+    </button>
+    <div class="past-shows-list" id="termsList">
+      <ul class="terms-list">
+        <li>All we can guarantee is the <strong>AUTOGRAPH</strong> &mdash; we cannot guarantee exact placement, character names, quotes, colors, drawings, etc.</li>
+        <li>If you cancel after sending your item, you must cover the consignment fee and return shipping.</li>
+        <li>Delayed/late packages that miss the event: all funds and items returned after the event, but you pay return shipping. Same applies to guest cancellations (full refund, you cover return shipping).</li>
+        <li>All funds must be sent by the due date, otherwise a 5% fee increase applies to cover instant transfer.</li>
+        <li>Pre-purchased tickets with an &quot;Admin Fee&quot; or &quot;Convenience Fee&quot; are paid by you.</li>
+        <li>Payment for shipping is expected <strong>within a week of the event</strong>. We are not a storage unit and will not hold your item.</li>
+      </ul>
+      <div class="terms-stamp">&#9875; By sending your items and funds, you accept all these terms.</div>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="si-contact">
+      <p>Have any questions? Reach out to us on Facebook!</p>
+      <a class="msg-btn" style="background:#1B2A5E;color:#fff;" href="https://m.me/61573129511779" target="_blank" rel="noopener">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Message Us
+      </a>
     </div>
 
   </div>
@@ -699,6 +826,8 @@ function grantAdmin() {
   isAdmin = true;
   document.getElementById('adminBar').classList.add('on');
   document.getElementById('mainWrap').classList.add('admin-on');
+  var ot = document.getElementById('tabOrder');
+  if (ot) ot.style.display = 'flex';
 }
 
 function grantConsignee(key) {
@@ -743,7 +872,7 @@ document.querySelectorAll('.page-tab').forEach(function(tab) {
     document.querySelectorAll('.page-tab').forEach(function(x) { x.classList.remove('on'); });
     document.querySelectorAll('.section').forEach(function(x) { x.classList.remove('on'); });
     this.classList.add('on');
-    var secMap = { home: 'secHome', inv: 'secInv', auto: 'secAuto', order: 'secOrder' };
+    var secMap = { home: 'secHome', inv: 'secInv', auto: 'secAuto', order: 'secOrder', sendins: 'secSendins' };
     var secEl = document.getElementById(secMap[t]);
     if (secEl) secEl.classList.add('on');
   });
@@ -951,9 +1080,28 @@ function showCard(s, isVending, isPast) {
     + '</div>';
 }
 
+function goToSendins() {
+  document.querySelectorAll('.page-tab').forEach(function(x){ x.classList.remove('on'); });
+  document.querySelectorAll('.section').forEach(function(x){ x.classList.remove('on'); });
+  document.getElementById('tabSendins').classList.add('on');
+  document.getElementById('secSendins').classList.add('on');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+window.goToSendins = goToSendins;
+
+function toggleTerms() {
+  var btn = document.getElementById('termsToggle');
+  var list = document.getElementById('termsList');
+  btn.classList.toggle('open');
+  list.classList.toggle('open');
+}
+window.toggleTerms = toggleTerms;
+
 function togglePast(type) {
-  var btn  = document.getElementById(type === 'vending' ? 'vendingPastToggle' : 'sendInPastToggle');
-  var list = document.getElementById(type === 'vending' ? 'vendingPast' : 'sendInPast');
+  var ids = { vending: ['vendingPastToggle','vendingPast'], sendIn: ['sendInPastToggle','sendInPast'], sendIn2: ['sendInPastToggle2','sendInPast2'] };
+  var pair = ids[type] || ids.sendIn;
+  var btn  = document.getElementById(pair[0]);
+  var list = document.getElementById(pair[1]);
   btn.classList.toggle('open');
   list.classList.toggle('open');
   btn.style.display = 'flex';
@@ -1036,6 +1184,7 @@ function loadAll() {
       if (isPast) past.push(obj); else upcoming.push(obj);
     });
     renderShows('sendInShows','sendInPast','sendInPastToggle', upcoming, past, false);
+    renderShows('sendInShows2','sendInPast2','sendInPastToggle2', upcoming, past, false);
   });
 
   // OnOrder: A=Name B=Number C=Line D=License E=Qty F=ETA
