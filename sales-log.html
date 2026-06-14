@@ -8,7 +8,6 @@
 <meta name="theme-color" content="#0d1623">
 <title>CTT Sales Log</title>
 <link rel="manifest" href="sales-log-manifest.json">
-<script src="https://unpkg.com/@zxing/browser@0.1.4/umd/index.min.js"></script>
 <style>
 /* ── TOKENS — CTT Brand: Navy + Crimson ─────────────────────── */
 :root {
@@ -750,7 +749,8 @@ let deleteIndex  = null;
 let scanStream   = null;
 let upcCache     = {};
 let timerInterval = null;
-let zxingReader  = null;
+let scanCanvas   = null;  // offscreen canvas for barcode decoding
+let scanTimer    = null;  // rAF/setInterval handle
 
 // ── STORAGE ──────────────────────────────────────────────────────
 function getSetting(key, fallback) {
@@ -932,58 +932,206 @@ function openManualEntry() {
 }
 
 async function startCamera() {
-  const hint = document.getElementById('scanner-hint');
+  const hint  = document.getElementById('scanner-hint');
+  const video = document.getElementById('scanner-video');
   hint.textContent = 'Starting camera...';
 
   try {
-    // @zxing/browser UMD exposes itself as window.ZXingBrowser
-    const ZXingBrowser = window.ZXingBrowser;
-    if (!ZXingBrowser || !ZXingBrowser.BrowserMultiFormatReader) {
-      hint.textContent = 'Scanner library not loaded — type barcode below';
-      return;
-    }
-
-    // Request camera permission explicitly first so we get a clear error
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
-      stream.getTracks().forEach(t => t.stop());
-    } catch (permErr) {
-      hint.textContent = 'Camera permission denied. Please allow camera access in Safari Settings, then try again.';
-      return;
-    }
-
-    zxingReader = new ZXingBrowser.BrowserMultiFormatReader();
-
-    const devices = await ZXingBrowser.BrowserMultiFormatReader.listVideoInputDevices();
-
-    let deviceId;
-    if (devices.length > 1) {
-      const back = devices.find(d => /back|rear|environment/i.test(d.label));
-      deviceId = back ? back.deviceId : devices[devices.length - 1].deviceId;
-    } else if (devices.length === 1) {
-      deviceId = devices[0].deviceId;
-    }
-
+    scanStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    video.srcObject = scanStream;
+    await video.play();
     hint.textContent = 'Center the barcode in the box';
 
-    await zxingReader.decodeFromVideoDevice(deviceId, document.getElementById('scanner-video'), (result, err) => {
-      if (result) {
-        closeScanner();
-        handleBarcode(result.getText());
+    // Use native BarcodeDetector if available (Chrome Android, some desktop)
+    if ('BarcodeDetector' in window) {
+      const detector = new BarcodeDetector({ formats: ['upc_a','upc_e','ean_13','ean_8','code_128','code_39','itf'] });
+      const poll = async () => {
+        if (!scanStream) return;
+        try {
+          const codes = await detector.detect(video);
+          if (codes.length) { closeScanner(); handleBarcode(codes[0].rawValue); return; }
+        } catch {}
+        scanTimer = setTimeout(poll, 200);
+      };
+      scanTimer = setTimeout(poll, 500);
+      return;
+    }
+
+    // Safari fallback: draw video frames to canvas and use quagga-style line scan
+    // We use a lightweight pure-JS EAN/UPC decoder embedded below
+    scanCanvas = document.createElement('canvas');
+    const ctx   = scanCanvas.getContext('2d', { willReadFrequently: true });
+    const scan  = () => {
+      if (!scanStream) return;
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        scanCanvas.width  = video.videoWidth  || 640;
+        scanCanvas.height = video.videoHeight || 480;
+        ctx.drawImage(video, 0, 0, scanCanvas.width, scanCanvas.height);
+        const imageData = ctx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+        const result = decodeBarcode(imageData);
+        if (result) { closeScanner(); handleBarcode(result); return; }
       }
-      // NotFoundException fires every frame with no barcode — safe to ignore
-    });
+      scanTimer = setTimeout(scan, 250);
+    };
+    scanTimer = setTimeout(scan, 800);
 
   } catch (err) {
-    const msg = err ? (err.message || err.name || String(err)) : 'Unknown error';
-    hint.textContent = 'Error: ' + msg + ' — type barcode below';
+    if (err.name === 'NotAllowedError') {
+      hint.textContent = 'Camera access denied — allow camera in Settings then try again';
+    } else {
+      hint.textContent = 'Camera unavailable — type barcode below';
+    }
     console.error('Camera error:', err);
   }
 }
 
 function stopCamera() {
-  if (zxingReader) { try { zxingReader.reset(); } catch {} zxingReader = null; }
-  if (scanStream)  { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+  clearTimeout(scanTimer); scanTimer = null;
+  if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+  scanCanvas = null;
+}
+
+// ── LIGHTWEIGHT EAN-13 / UPC-A DECODER ───────────────────────────
+// Samples a horizontal line through the middle of the image,
+// finds the bar pattern, and decodes EAN-13 / UPC-A barcodes.
+function decodeBarcode(imageData) {
+  const { data, width, height } = imageData;
+  const results = new Set();
+
+  // Sample 5 horizontal lines around the vertical center
+  for (let row = -2; row <= 2; row++) {
+    const y = Math.floor(height / 2) + row * Math.floor(height / 12);
+    const line = new Uint8Array(width);
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4;
+      // Convert to grayscale
+      line[x] = (data[i] * 77 + data[i+1] * 150 + data[i+2] * 29) >> 8;
+    }
+    const code = tryDecodeEAN(line, width);
+    if (code) results.add(code);
+  }
+
+  return results.size === 1 ? [...results][0] : null;
+}
+
+function tryDecodeEAN(line, width) {
+  // Adaptive threshold
+  let sum = 0;
+  for (let i = 0; i < width; i++) sum += line[i];
+  const thresh = sum / width;
+
+  // Convert to binary (0=dark bar, 1=light space)
+  const bits = new Uint8Array(width);
+  for (let i = 0; i < width; i++) bits[i] = line[i] > thresh ? 1 : 0;
+
+  // Find runs of same value
+  const runs = [];
+  let cur = bits[0], count = 1;
+  for (let i = 1; i < width; i++) {
+    if (bits[i] === cur) { count++; }
+    else { runs.push({ v: cur, n: count }); cur = bits[i]; count = 1; }
+  }
+  runs.push({ v: cur, n: count });
+
+  // EAN-13 has 95 modules; find start guard (dark-light-dark narrow bars)
+  // Try multiple starting points
+  for (let startRun = 0; startRun < runs.length - 60; startRun++) {
+    const result = tryEAN13(runs, startRun);
+    if (result) return result;
+  }
+  return null;
+}
+
+// EAN-13 L-code patterns (digit → bar widths as multiples of unit)
+const L_PATTERNS = [
+  [3,2,1,1],[2,2,2,1],[2,1,2,2],[1,4,1,1],[1,1,3,2],
+  [1,2,3,1],[1,1,1,4],[1,3,1,2],[1,2,1,3],[3,1,1,2]
+];
+const G_PATTERNS = [
+  [1,1,2,3],[1,2,2,2],[2,2,1,2],[1,1,4,1],[2,3,1,1],
+  [1,3,2,1],[4,1,1,1],[2,1,3,1],[3,1,2,1],[2,1,1,3]
+];
+const R_PATTERNS = [
+  [3,2,1,1],[2,2,2,1],[2,1,2,2],[1,4,1,1],[1,1,3,2],
+  [1,2,3,1],[1,1,1,4],[1,3,1,2],[1,2,1,3],[3,1,1,2]
+].map(p => [p[3],p[2],p[1],p[0]]);
+
+function tryEAN13(runs, s) {
+  try {
+    // Start guard: dark(1) light(1) dark(1)
+    if (runs[s].v !== 0 || runs[s+1].v !== 1 || runs[s+2].v !== 0) return null;
+    const unit = (runs[s].n + runs[s+1].n + runs[s+2].n) / 3;
+    if (unit < 1 || unit > 50) return null;
+
+    let pos = s + 3;
+    const digits = [];
+    const parities = []; // track L vs G for first group
+
+    // Decode 6 left-side digits (4 runs each)
+    for (let d = 0; d < 6; d++) {
+      if (pos + 3 >= runs.length) return null;
+      const r = [runs[pos].n, runs[pos+1].n, runs[pos+2].n, runs[pos+3].n];
+      pos += 4;
+      const norm = r.map(v => Math.round(v / unit));
+      let found = -1, isG = false;
+      for (let n = 0; n < 10; n++) {
+        if (patternsMatch(norm, L_PATTERNS[n])) { found = n; isG = false; break; }
+        if (patternsMatch(norm, G_PATTERNS[n])) { found = n; isG = true; break; }
+      }
+      if (found === -1) return null;
+      digits.push(found);
+      parities.push(isG ? 1 : 0);
+    }
+
+    // Middle guard: light(1) dark(1) light(1) dark(1) light(1)
+    if (pos + 4 >= runs.length) return null;
+    pos += 5;
+
+    // Decode 6 right-side digits
+    for (let d = 0; d < 6; d++) {
+      if (pos + 3 >= runs.length) return null;
+      const r = [runs[pos].n, runs[pos+1].n, runs[pos+2].n, runs[pos+3].n];
+      pos += 4;
+      const norm = r.map(v => Math.round(v / unit));
+      let found = -1;
+      for (let n = 0; n < 10; n++) {
+        if (patternsMatch(norm, R_PATTERNS[n])) { found = n; break; }
+      }
+      if (found === -1) return null;
+      digits.push(found);
+    }
+
+    if (digits.length !== 12) return null;
+
+    // Derive first digit from parity pattern
+    const FIRST_DIGIT_PARITY = [
+      [0,0,0,0,0,0],[0,0,1,0,1,1],[0,0,1,1,0,1],[0,0,1,1,1,0],
+      [0,1,0,0,1,1],[0,1,1,0,0,1],[0,1,1,1,0,0],[0,1,0,1,0,1],
+      [0,1,0,1,1,0],[0,1,1,0,1,0]
+    ];
+    let firstDigit = -1;
+    for (let n = 0; n < 10; n++) {
+      if (FIRST_DIGIT_PARITY[n].every((p,i) => p === parities[i])) { firstDigit = n; break; }
+    }
+    if (firstDigit === -1) return null;
+
+    const allDigits = [firstDigit, ...digits];
+
+    // Checksum validation
+    let check = 0;
+    for (let i = 0; i < 12; i++) check += allDigits[i] * (i % 2 === 0 ? 1 : 3);
+    const expectedCheck = (10 - (check % 10)) % 10;
+    if (expectedCheck !== allDigits[12]) return null;
+
+    return allDigits.join('');
+  } catch { return null; }
+}
+
+function patternsMatch(a, b) {
+  // Allow ±1 tolerance on each element
+  return a.length === b.length && a.every((v,i) => Math.abs(v - b[i]) <= 1);
 }
 
 function lookupManualBarcode() {
