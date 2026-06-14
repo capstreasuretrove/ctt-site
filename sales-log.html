@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#0d1623">
 <title>CTT Sales Log</title>
 <link rel="manifest" href="sales-log-manifest.json">
-<script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
+<script src="https://unpkg.com/@zxing/browser@0.1.4/umd/index.min.js"></script>
 <style>
 /* ── TOKENS — CTT Brand: Navy + Crimson ─────────────────────── */
 :root {
@@ -933,20 +933,29 @@ function openManualEntry() {
 
 async function startCamera() {
   const hint = document.getElementById('scanner-hint');
-  hint.textContent = 'Center the barcode in the box';
-  try {
-    const ZXing  = window.ZXing;
-    const hints  = new Map();
-    const formats = [
-      ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E,
-      ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8,
-      ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.CODE_39
-    ];
-    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
-    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-    zxingReader = new ZXing.BrowserMultiFormatReader(hints);
+  hint.textContent = 'Starting camera...';
 
-    const devices = await ZXing.BrowserMultiFormatReader.listVideoInputDevices();
+  try {
+    // @zxing/browser UMD exposes itself as window.ZXingBrowser
+    const ZXingBrowser = window.ZXingBrowser;
+    if (!ZXingBrowser || !ZXingBrowser.BrowserMultiFormatReader) {
+      hint.textContent = 'Scanner library not loaded — type barcode below';
+      return;
+    }
+
+    // Request camera permission explicitly first so we get a clear error
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
+      stream.getTracks().forEach(t => t.stop());
+    } catch (permErr) {
+      hint.textContent = 'Camera permission denied. Please allow camera access in Safari Settings, then try again.';
+      return;
+    }
+
+    zxingReader = new ZXingBrowser.BrowserMultiFormatReader();
+
+    const devices = await ZXingBrowser.BrowserMultiFormatReader.listVideoInputDevices();
+
     let deviceId;
     if (devices.length > 1) {
       const back = devices.find(d => /back|rear|environment/i.test(d.label));
@@ -955,12 +964,20 @@ async function startCamera() {
       deviceId = devices[0].deviceId;
     }
 
-    await zxingReader.decodeFromVideoDevice(deviceId, document.getElementById('scanner-video'), (result) => {
-      if (result) { closeScanner(); handleBarcode(result.getText()); }
+    hint.textContent = 'Center the barcode in the box';
+
+    await zxingReader.decodeFromVideoDevice(deviceId, document.getElementById('scanner-video'), (result, err) => {
+      if (result) {
+        closeScanner();
+        handleBarcode(result.getText());
+      }
+      // NotFoundException fires every frame with no barcode — safe to ignore
     });
+
   } catch (err) {
-    closeScanner();
-    showToast(err && err.name === 'NotAllowedError' ? 'Camera access denied' : 'Camera error — use manual entry', 'error');
+    const msg = err ? (err.message || err.name || String(err)) : 'Unknown error';
+    hint.textContent = 'Error: ' + msg + ' — type barcode below';
+    console.error('Camera error:', err);
   }
 }
 
