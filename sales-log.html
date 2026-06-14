@@ -752,6 +752,7 @@ let upcCache     = {};
 let timerInterval = null;
 let scanCanvas   = null;  // offscreen canvas for barcode decoding
 let scanTimer    = null;  // rAF/setInterval handle
+let zxingReader  = null;  // ZXing reader instance
 
 // ── STORAGE ──────────────────────────────────────────────────────
 function getSetting(key, fallback) {
@@ -966,11 +967,15 @@ async function startCamera() {
     // Path 2: ZXingBrowser loaded from local file (zxing-browser.min.js in repo)
     if (typeof ZXingBrowser !== 'undefined' && ZXingBrowser.BrowserMultiFormatReader) {
       hint.textContent = 'Center the barcode in the box';
-      const reader = new ZXingBrowser.BrowserMultiFormatReader();
-      await reader.decodeFromStream(scanStream, video, (result, err) => {
-        if (result) { closeScanner(); handleBarcode(result.getText()); }
+      zxingReader = new ZXingBrowser.BrowserMultiFormatReader();
+      let alreadyScanned = false;
+      await zxingReader.decodeFromStream(scanStream, video, (result, err) => {
+        if (result && !alreadyScanned) {
+          alreadyScanned = true;
+          stopCamera();
+          handleBarcode(result.getText());
+        }
       });
-      scanTimer = { zxingReader: reader };
       return;
     }
 
@@ -988,13 +993,19 @@ async function startCamera() {
 }
 
 function stopCamera() {
-  if (scanTimer && scanTimer.zxingReader) {
-    try { scanTimer.zxingReader.reset(); } catch {}
-  } else {
-    clearTimeout(scanTimer);
+  // Stop ZXing reader if active
+  if (zxingReader) {
+    try { zxingReader.reset(); } catch {}
+    zxingReader = null;
   }
+  // Stop polling timer if active
+  clearTimeout(scanTimer);
   scanTimer = null;
-  if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+  // Stop camera stream tracks
+  if (scanStream) {
+    scanStream.getTracks().forEach(t => t.stop());
+    scanStream = null;
+  }
   scanCanvas = null;
 }
 

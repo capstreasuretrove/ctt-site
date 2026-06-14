@@ -1,6 +1,6 @@
 // Bump this version string every time you deploy a new build
 // The browser detects the change, installs the new SW, and clears old caches automatically
-const CACHE_NAME = 'ctt-sales-log-v5';
+const CACHE_NAME = 'ctt-sales-log-v6';
 const ASSETS = [
   'sales-log.html',
   'sales-log-manifest.json',
