@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#0d1623">
 <title>CTT Sales Log</title>
 <link rel="manifest" href="sales-log-manifest.json">
+<script src="zxing-browser.min.js"></script>
 <style>
 /* ── TOKENS — CTT Brand: Navy + Crimson ─────────────────────── */
 :root {
@@ -937,58 +938,62 @@ async function startCamera() {
   hint.textContent = 'Starting camera...';
 
   try {
+    // Get camera stream
     scanStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
     });
     video.srcObject = scanStream;
     await video.play();
-    hint.textContent = 'Center the barcode in the box';
 
-    // Use native BarcodeDetector if available (Chrome Android, some desktop)
+    // Path 1: Native BarcodeDetector (Chrome Android, desktop Chrome/Edge)
     if ('BarcodeDetector' in window) {
-      const detector = new BarcodeDetector({ formats: ['upc_a','upc_e','ean_13','ean_8','code_128','code_39','itf'] });
+      hint.textContent = 'Center the barcode in the box';
+      const detector = new BarcodeDetector({
+        formats: ['upc_a','upc_e','ean_13','ean_8','code_128','code_39','itf']
+      });
       const poll = async () => {
         if (!scanStream) return;
         try {
           const codes = await detector.detect(video);
           if (codes.length) { closeScanner(); handleBarcode(codes[0].rawValue); return; }
         } catch {}
-        scanTimer = setTimeout(poll, 200);
+        scanTimer = setTimeout(poll, 150);
       };
-      scanTimer = setTimeout(poll, 500);
+      scanTimer = setTimeout(poll, 300);
       return;
     }
 
-    // Safari fallback: draw video frames to canvas and use quagga-style line scan
-    // We use a lightweight pure-JS EAN/UPC decoder embedded below
-    scanCanvas = document.createElement('canvas');
-    const ctx   = scanCanvas.getContext('2d', { willReadFrequently: true });
-    const scan  = () => {
-      if (!scanStream) return;
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        scanCanvas.width  = video.videoWidth  || 640;
-        scanCanvas.height = video.videoHeight || 480;
-        ctx.drawImage(video, 0, 0, scanCanvas.width, scanCanvas.height);
-        const imageData = ctx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
-        const result = decodeBarcode(imageData);
-        if (result) { closeScanner(); handleBarcode(result); return; }
-      }
-      scanTimer = setTimeout(scan, 250);
-    };
-    scanTimer = setTimeout(scan, 800);
+    // Path 2: ZXingBrowser loaded from local file (zxing-browser.min.js in repo)
+    if (typeof ZXingBrowser !== 'undefined' && ZXingBrowser.BrowserMultiFormatReader) {
+      hint.textContent = 'Center the barcode in the box';
+      const reader = new ZXingBrowser.BrowserMultiFormatReader();
+      await reader.decodeFromStream(scanStream, video, (result, err) => {
+        if (result) { closeScanner(); handleBarcode(result.getText()); }
+      });
+      scanTimer = { zxingReader: reader };
+      return;
+    }
+
+    // Path 3: Neither available — camera shows but tell user to type
+    hint.textContent = 'Auto-scan not available — type the barcode number below and tap Go';
 
   } catch (err) {
     if (err.name === 'NotAllowedError') {
-      hint.textContent = 'Camera access denied — allow camera in Settings then try again';
+      hint.textContent = 'Camera denied — allow in Settings > Safari > Camera';
     } else {
-      hint.textContent = 'Camera unavailable — type barcode below';
+      hint.textContent = 'Camera error: ' + (err.message || err.name);
     }
     console.error('Camera error:', err);
   }
 }
 
 function stopCamera() {
-  clearTimeout(scanTimer); scanTimer = null;
+  if (scanTimer && scanTimer.zxingReader) {
+    try { scanTimer.zxingReader.reset(); } catch {}
+  } else {
+    clearTimeout(scanTimer);
+  }
+  scanTimer = null;
   if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
   scanCanvas = null;
 }
