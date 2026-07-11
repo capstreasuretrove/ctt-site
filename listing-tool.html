@@ -309,7 +309,9 @@ body{font-family:'DM Sans',Arial,sans-serif;background:#F7F8FA;color:#1B2A5E;min
         <hr class="divider">
         <div style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem;">eBay Business Policy IDs</div>
         <div class="cfg-grid">
-          <div class="field"><label>Shipping Policy ID</label><input type="text" id="cfgShipPolicy" value="250736863013"><span class="field-note">Calculated: USPSParcel, 3 business days</span></div>
+          <div class="field"><label>Shipping Policy ID (standard, ≤3 days)</label><input type="text" id="cfgShipPolicy" value="250736863013"><span class="field-note">Calculated: USPSParcel, 3 business days</span></div>
+          <div class="field"><label>Shipping Policy ID (10-day)</label><input type="text" id="cfgShipPolicy10" value="262081641013"><span class="field-note">Used when Handling Time is 4–10</span></div>
+          <div class="field"><label>Shipping Policy ID (15-day)</label><input type="text" id="cfgShipPolicy15" value="262081581013"><span class="field-note">Used when Handling Time is 11+</span></div>
           <div class="field"><label>Payment Policy ID</label><input type="text" id="cfgPayPolicy" value="250736864013"><span class="field-note">eBay Managed Payments</span></div>
           <div class="field"><label>Return Policy ID</label><input type="text" id="cfgReturnPolicy" value="250285724013"><span class="field-note">No Return Accepted</span></div>
         </div>
@@ -550,7 +552,7 @@ function checkPw(){
 document.getElementById('pwInput').addEventListener('keydown',function(e){ if(e.key==='Enter') checkPw(); });
 
 // ── CONFIG ───────────────────────────────────────────────────────
-var CFG=['cfgSheetId','cfgDriveKey','cfgImgbbKey','cfgEbayToken','cfgShipping','cfgReturns','cfgCatId','cfgSeller','cfgWeight','cfgBoxSize','cfgShipPolicy','cfgPayPolicy','cfgReturnPolicy'];
+var CFG=['cfgSheetId','cfgDriveKey','cfgImgbbKey','cfgEbayToken','cfgShipping','cfgReturns','cfgCatId','cfgSeller','cfgWeight','cfgBoxSize','cfgShipPolicy','cfgShipPolicy10','cfgShipPolicy15','cfgPayPolicy','cfgReturnPolicy'];
 function saveCfg(){ CFG.forEach(function(id){ localStorage.setItem(id,document.getElementById(id).value); }); var s=document.getElementById('cfgSaved'); s.style.display='inline'; setTimeout(function(){ s.style.display='none'; },2000); checkEbayToken(); }
 function loadCfg(){ CFG.forEach(function(id){ var v=localStorage.getItem(id); if(v) document.getElementById(id).value=v; }); checkEbayToken(); }
 function checkEbayToken(){ var has=document.getElementById('cfgEbayToken').value.trim().length>10; document.getElementById('bulkUploadBtn').disabled=!has; var qlBtn=document.getElementById('qlEbayBtn'); if(qlBtn) qlBtn.disabled=!has; document.getElementById('ebayPendingNotice').style.display=has?'none':'flex'; }
@@ -1049,7 +1051,10 @@ function buildEbayXml(l,imageUrls){
   var weightOzRemainder=Math.round((weight-weightLbs)*16);
 
   // Business policy IDs
+  var h=l.handlingTime&&/^\d+$/.test(l.handlingTime)?parseInt(l.handlingTime,10):3;
   var shipPolicyId=cfg('cfgShipPolicy');
+  if(h>=4&&h<=10&&cfg('cfgShipPolicy10')) shipPolicyId=cfg('cfgShipPolicy10');
+  else if(h>=11&&cfg('cfgShipPolicy15')) shipPolicyId=cfg('cfgShipPolicy15');
   var payPolicyId=cfg('cfgPayPolicy');
   var returnPolicyId=cfg('cfgReturnPolicy');
 
@@ -1186,7 +1191,7 @@ function renderPreviewModal(d){
     +(d.variant?'<div class="preview-meta-item">Variant: <span>'+esc(d.variant)+'</span></div>':'')
     +(d.signedBy?'<div class="preview-meta-item">Signed by: <span>'+esc(d.signedBy)+'</span></div>':'')
     +'<div class="preview-meta-item">Shipping: <span>'+(d.shipOverride&&d.shipOverride.trim()?esc(d.shipOverride):(cfg('cfgWeight')||'1')+'lb, '+(cfg('cfgBoxSize')||'8x6x5')+'"')+'</span></div>'
-    +'<div class="preview-meta-item">Handling: <span>'+(d.handlingTime&&d.handlingTime.trim()?esc(d.handlingTime)+' days':'3 days (standard)')+'</span></div>'
+    +'<div class="preview-meta-item">Handling: <span>'+(function(){var h=d.handlingTime&&/^\\d+$/.test(d.handlingTime)?parseInt(d.handlingTime,10):3;var tier=h>=11?' (15-day policy)':h>=4?' (10-day policy)':' (standard policy)';return (h===3&&!(d.handlingTime&&d.handlingTime.trim())?'3':esc(String(h)))+' days'+tier;})()+'</span></div>'
     +'</div>'
     +'<div class="preview-desc">'+esc(d.desc||'')+'</div>'
     +'</div>'
