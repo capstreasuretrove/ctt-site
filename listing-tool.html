@@ -618,6 +618,7 @@ function parseRow(r){
     coaNumber:  cell(COL.coaNumber).trim(),
     driveUrl:   du,
     driveId:    parseDriveId(du),
+    driveFileId: parseDriveFileId(du),
     shipOverride: cell(COL.shipOverride).trim(),
     photos:     [],
     selected:   true,
@@ -629,6 +630,7 @@ function parseRow(r){
   };
 }
 function parseDriveId(url){ if(!url) return ''; var m=url.match(/\/folders\/([a-zA-Z0-9_-]+)/); return m?m[1]:''; }
+function parseDriveFileId(url){ if(!url) return ''; var m=url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/); if(m) return m[1]; m=url.match(/[?&]id=([a-zA-Z0-9_-]+)/); return m?m[1]:''; }
 
 // ── TITLE & DESCRIPTION GENERATORS ───────────────────────────────
 function generateListing(l){
@@ -661,7 +663,7 @@ function buildTitleLimited(l){
   if(l.variant)    parts.push(l.variant);
   if(l.exclusive)  parts.push(l.exclusive+' Excl');
   if(l.number)     parts.push('#'+l.number);
-  if(l.pieceCount) parts.push(l.pieceCount+'pcs');
+  if(l.pieceCount) parts.push(/^\d+$/.test(l.pieceCount)?l.pieceCount+'pcs':l.pieceCount);
   return parts.filter(Boolean).join(' ');
 }
 // Signed: SIGNED Funko Pop! [Line] [License]: [Name] [#] - [Signed by] [Auth] COA
@@ -682,7 +684,7 @@ function buildDescCommon(l){
     +'This pop is packed carefully to ensure safe delivery. We ship within 1-3 business days.\n\n'
     +'Item details:\n'
     +'- Character: '+l.name+(l.number?' #'+l.number:'')+'\n'
-    +'- Line & License: '+l.line+' - '+l.license+'\n'
+    +(l.license?'- Line & License: '+l.line+' - '+l.license+'\n':'- Line: '+l.line+'\n')
     +(l.variant?'- Variant: '+l.variant+'\n':'')
     +'- Condition: '+dc+' (See photos, Feel free to message us for additional photos!)\n\n'
     +'A must have for any '+l.line+' fan or '+l.license+' collector!\n\n'
@@ -694,7 +696,7 @@ function buildDescExclusive(l){
     +'This pop is packed carefully to ensure safe delivery. We ship within 1-3 business days.\n\n'
     +'Item details:\n'
     +'- Character: '+l.name+(l.number?' #'+l.number:'')+'\n'
-    +'- Line & License: '+l.line+' - '+l.license+'\n'
+    +(l.license?'- Line & License: '+l.line+' - '+l.license+'\n':'- Line: '+l.line+'\n')
     +(l.variant?'- Variant: '+l.variant+'\n':'')
     +(l.exclusive?'- Exclusive: '+l.exclusive+' Excl\n':'')
     +'\n- Condition: '+dc+' (See photos, Feel free to message us for additional photos!)\n\n'
@@ -703,14 +705,14 @@ function buildDescExclusive(l){
 }
 function buildDescLimited(l){
   var dc=l.dispCond||l.ebayCond||'Mint';
-  return 'Add this Rare Funko Pop! '+l.line+' '+l.license+': '+l.name+(l.variant?' '+l.variant:'')+(l.exclusive?' '+l.exclusive+' Excl':'')+(l.number?' #'+l.number:'')+(l.pieceCount?', limited to '+l.pieceCount:'')+', to your collection!\n\n'
+  return 'Add this Rare Funko Pop! '+l.line+' '+l.license+': '+l.name+(l.variant?' '+l.variant:'')+(l.exclusive?' '+l.exclusive+' Excl':'')+(l.number?' #'+l.number:'')+(l.pieceCount?(/^\d+$/.test(l.pieceCount)?', limited to '+l.pieceCount:', a '+l.pieceCount+' rarity'):'')+', to your collection!\n\n'
     +'This pop is shipped in pictured protector, and it is packed carefully to ensure safe delivery. We ship within 1-3 business days.\n\n'
     +'Item details:\n'
     +'- Character: '+l.name+(l.number?' #'+l.number:'')+'\n'
-    +'- Line & License: '+l.line+' - '+l.license+'\n'
+    +(l.license?'- Line & License: '+l.line+' - '+l.license+'\n':'- Line: '+l.line+'\n')
     +(l.variant?'- Variant: '+l.variant+'\n':'')
     +(l.exclusive?'- Exclusive: '+l.exclusive+' Excl\n':'')
-    +(l.pieceCount?'- Limited to '+l.pieceCount+'pcs\n':'')
+    +(l.pieceCount?(/^\d+$/.test(l.pieceCount)?'- Limited to '+l.pieceCount+'pcs\n':'- Rarity: '+l.pieceCount+'\n'):'')
     +'- Condition: '+dc+' (See photos, Feel free to message us for additional photos!)\n\n'
     +'A must have for any '+l.license+' fan or limited edition collector!\n\n'
     +'Any questions? Message us and we\'ll get back to you ASAP!';
@@ -760,13 +762,13 @@ function renderCard(l,i){
   var statusHtml=l.ebayStatus==='Posted'?'<span class="issue-flag" style="background:#DBEAFE;color:#1E40AF;border:1px solid #BFDBFE;">Posted</span>':'';
   var photosHtml=l.photos&&l.photos.length
     ? l.photos.slice(0,4).map(function(p){ return '<img src="'+esc(p.url)+'" style="width:48px;height:48px;object-fit:cover;border-radius:5px;border:1px solid var(--border);" alt="">'; }).join('')+(l.photos.length>4?'<span style="font-size:.72rem;color:var(--muted);align-self:center;">+'+( l.photos.length-4)+'</span>':'')
-    : (l.driveId?'<span style="font-size:.78rem;color:var(--gold);">📁 Folder linked — click Load Photos</span>':'<span style="font-size:.78rem;color:var(--muted);">No Drive folder set</span>');
+    : (l.driveId?'<span style="font-size:.78rem;color:var(--gold);">📁 Folder linked — click Load Photos</span>':l.driveFileId?'<span style="font-size:.78rem;color:var(--gold);">🖼 Photo linked — click Load Photos</span>':'<span style="font-size:.78rem;color:var(--muted);">No Drive folder set</span>');
 
   return '<div class="'+cardClass+'" id="lcard_'+i+'">'
 
     // HEADER
     +'<div class="lcard-hd">'
-    +'<input type="checkbox" class="lcard-chk" id="lchk_'+i+'"'+(l.selected?' checked':'')+'onchange="toggleCard('+i+',this)">'
+    +'<input type="checkbox" class="lcard-chk" id="lchk_'+i+'"'+(l.selected?' checked':'')+' onchange="toggleCard('+i+',this)">'
     +'<span class="lcard-num">'+(i+1)+'</span>'
     +'<span class="lcard-tmpl '+tmplCls+'">'+esc(l.template)+'</span>'
     +'<span class="lcard-name">'+esc(l.name)+(l.number?' #'+esc(l.number):'')+'</span>'
@@ -887,7 +889,7 @@ function onTitleInput(i,val){
 function loadPhotos(){
   var apiKey=cfg('cfgDriveKey');
   if(!apiKey){ showBanner('sheetBanner','warn','Enter your Google Drive API Key in Configuration first.'); return; }
-  var toLoad=listings.filter(function(l){ return l.driveId; });
+  var toLoad=listings.filter(function(l){ return l.driveId||l.driveFileId; });
   if(!toLoad.length){ showBanner('sheetBanner','warn','No Drive folder URLs found in your sheet.'); return; }
   showBanner('photoBanner','info','Loading photos…');
   document.getElementById('photoBanner').style.display='flex';
@@ -900,13 +902,19 @@ function loadPhotos(){
       showBanner('photoBanner','ok','✓ Photos loaded for '+loaded+' listing'+(loaded!==1?'s':'')+'.');
       renderListings(); return;
     }
-    fetchDriveFolder(toLoad[i].driveId,apiKey,function(photos){
+    fetchPhotosFor(toLoad[i],apiKey,function(photos){
       toLoad[i].photos=photos||[]; done++;
       document.getElementById('photoBanner').textContent='Loading photos… '+done+' / '+toLoad.length;
       next(i+1);
     });
   }
   next(0);
+}
+function fetchPhotosFor(l,apiKey,cb){
+  // Handles both folder links and single-file links
+  if(l.driveId){ fetchDriveFolder(l.driveId,apiKey,cb); }
+  else if(l.driveFileId){ cb([{id:l.driveFileId,name:'photo',url:'https://drive.google.com/thumbnail?id='+l.driveFileId+'&sz=w800'}]); }
+  else cb([]);
 }
 function fetchDriveFolder(folderId,apiKey,cb){
   var url='https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent("'"+folderId+"' in parents and mimeType contains 'image/' and trashed=false")+'&fields=files(id,name,mimeType)&orderBy=name&key='+encodeURIComponent(apiKey)+'&pageSize=20';
@@ -962,9 +970,9 @@ async function bulkUpload(){
     log('info','── '+(i+1)+': '+l.genTitle);
     var hostedUrls=[];
     // Auto-fetch photos from Drive if not already loaded
-    if((!l.photos||!l.photos.length)&&l.driveId&&cfg('cfgDriveKey')){
+    if((!l.photos||!l.photos.length)&&(l.driveId||l.driveFileId)&&cfg('cfgDriveKey')){
       log('info','  Fetching photos from Drive…');
-      l.photos = await new Promise(function(res){ fetchDriveFolder(l.driveId,cfg('cfgDriveKey'),function(p){ res(p||[]); }); });
+      l.photos = await new Promise(function(res){ fetchPhotosFor(l,cfg('cfgDriveKey'),function(p){ res(p||[]); }); });
       log('info','  Found '+l.photos.length+' photo(s) in Drive folder.');
     }
     if(l.photos&&l.photos.length){
@@ -1203,6 +1211,7 @@ function qlBuildListing() {
     coaNumber:   document.getElementById('qlCoaNumber').value.trim(),
     driveUrl:    document.getElementById('qlDrive').value.trim(),
     driveId:     parseDriveId(document.getElementById('qlDrive').value.trim()),
+    driveFileId: parseDriveFileId(document.getElementById('qlDrive').value.trim()),
     shipOverride:document.getElementById('qlShipOverride').value.trim(),
     photos:      []
   };
@@ -1278,9 +1287,9 @@ async function qlPostEbay(){
     document.getElementById('qlExportOut').after(statusEl);
   }
 
-  if(l.driveId && cfg('cfgDriveKey')){
+  if((l.driveId||l.driveFileId) && cfg('cfgDriveKey')){
     statusEl.textContent='📁 Fetching photos from Drive…';
-    fetchDriveFolder(l.driveId, cfg('cfgDriveKey'), async function(photos){
+    fetchPhotosFor(l, cfg('cfgDriveKey'), async function(photos){
       l.photos = photos||[];
       if(!l.photos.length){
         statusEl.textContent='⚠ No photos found in Drive folder. Check the folder URL and that it is set to "Anyone with the link can view".';
@@ -1290,7 +1299,7 @@ async function qlPostEbay(){
       }
       await qlDoPost(l, token, imgbbKey, statusEl);
     });
-  } else if(l.driveId && !cfg('cfgDriveKey')){
+  } else if((l.driveId||l.driveFileId) && !cfg('cfgDriveKey')){
     statusEl.innerHTML='⚠ Drive folder linked but no Google Drive API Key is saved in <strong>Configuration</strong>. Add your API key and save, then try again.';
   } else {
     if(!confirm('No Drive folder linked — post without photos?')) return;
