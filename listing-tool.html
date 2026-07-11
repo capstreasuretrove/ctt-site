@@ -694,10 +694,15 @@ function buildTitleSigned(l){
 }
 
 // DESCRIPTIONS
+// Returns the "We ship within 1-3 business days" phrase only if handling time is 3 or less
+function shipDaysPhrase(l){
+  var h=l.handlingTime&&/^\d+$/.test(l.handlingTime)?parseInt(l.handlingTime,10):3;
+  return h>3?'':' We ship within 1-3 business days.';
+}
 function buildDescCommon(l){
   var dc=l.dispCond||l.ebayCond||'Mint';
   return 'Add this Funko Pop! '+l.line+' '+l.license+': '+l.name+(l.variant?' '+l.variant:'')+(l.number?' #'+l.number:'')+' to your collection!\n\n'
-    +(l.protector?'This pop ships in a '+l.protector+', and is packed carefully to ensure safe delivery. We ship within 1-3 business days.\n\n':'This pop is packed carefully to ensure safe delivery. We ship within 1-3 business days.\n\n')
+    +(l.protector?'This pop ships in a '+l.protector+', and is packed carefully to ensure safe delivery.'+shipDaysPhrase(l)+'\n\n':'This pop is packed carefully to ensure safe delivery.'+shipDaysPhrase(l)+'\n\n')
     +'Item details:\n'
     +'- Character: '+l.name+(l.number?' #'+l.number:'')+'\n'
     +(l.license?'- Line & License: '+l.line+' - '+l.license+'\n':'- Line: '+l.line+'\n')
@@ -709,7 +714,7 @@ function buildDescCommon(l){
 function buildDescExclusive(l){
   var dc=l.dispCond||l.ebayCond||'Mint';
   return 'Add this Funko Pop! '+l.line+' '+l.license+': '+l.name+(l.variant?' '+l.variant:'')+(l.number?' #'+l.number:'')+' to your collection!\n\n'
-    +(l.protector?'This pop ships in a '+l.protector+', and is packed carefully to ensure safe delivery. We ship within 1-3 business days.\n\n':'This pop is packed carefully to ensure safe delivery. We ship within 1-3 business days.\n\n')
+    +(l.protector?'This pop ships in a '+l.protector+', and is packed carefully to ensure safe delivery.'+shipDaysPhrase(l)+'\n\n':'This pop is packed carefully to ensure safe delivery.'+shipDaysPhrase(l)+'\n\n')
     +'Item details:\n'
     +'- Character: '+l.name+(l.number?' #'+l.number:'')+'\n'
     +(l.license?'- Line & License: '+l.line+' - '+l.license+'\n':'- Line: '+l.line+'\n')
@@ -722,7 +727,7 @@ function buildDescExclusive(l){
 function buildDescLimited(l){
   var dc=l.dispCond||l.ebayCond||'Mint';
   return 'Add this Rare Funko Pop! '+l.line+' '+l.license+': '+l.name+(l.variant?' '+l.variant:'')+(l.exclusive?' '+l.exclusive+' Excl':'')+(l.number?' #'+l.number:'')+(l.pieceCount?(/^\d+$/.test(l.pieceCount)?', limited to '+l.pieceCount:', a '+l.pieceCount+' rarity'):'')+', to your collection!\n\n'
-    +(l.protector?'This pop is shipped in a '+l.protector+', and it is packed carefully to ensure safe delivery. We ship within 1-3 business days.\n\n':'This pop is shipped in pictured protector, and it is packed carefully to ensure safe delivery. We ship within 1-3 business days.\n\n')
+    +(l.protector?'This pop is shipped in a '+l.protector+', and it is packed carefully to ensure safe delivery.'+shipDaysPhrase(l)+'\n\n':'This pop is shipped in pictured protector, and it is packed carefully to ensure safe delivery.'+shipDaysPhrase(l)+'\n\n')
     +'Item details:\n'
     +'- Character: '+l.name+(l.number?' #'+l.number:'')+'\n'
     +(l.license?'- Line & License: '+l.line+' - '+l.license+'\n':'- Line: '+l.line+'\n')
