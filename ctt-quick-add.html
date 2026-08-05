@@ -6,53 +6,61 @@
 <title>CTT Quick Add — Inventory</title>
 <style>
   :root {
+    --bg: #f6f4ef;
+    --surface: #ffffff;
+    --surface-2: #eef0f4;
     --navy: #101c33;
-    --navy-2: #16243f;
-    --navy-3: #1e2f52;
     --crimson: #c8323e;
-    --crimson-dim: #8f2530;
-    --gold: #e8b64c;
-    --ink: #e8ecf4;
-    --ink-dim: #93a0b8;
-    --line: #2a3a5e;
-    --ok: #3fae6a;
-    --err: #e05252;
+    --crimson-dim: #e3b3b8;
+    --gold: #b9862c;
+    --ink: #1c2436;
+    --ink-dim: #6b7385;
+    --line: #dde1e8;
+    --ok: #2e8f56;
+    --err: #c94040;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: var(--navy); color: var(--ink); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  html, body { background: var(--bg); color: var(--ink); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
   body { padding: 16px 14px 90px; }
 
-  header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
-  header h1 { font-size: 1.15rem; letter-spacing: .06em; text-transform: uppercase; }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
+  header h1 { font-size: 1.15rem; letter-spacing: .06em; text-transform: uppercase; color: var(--navy); }
   header h1 .accent { color: var(--crimson); }
   header .sub { color: var(--ink-dim); font-size: .8rem; }
+  .sheet-link {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--navy);
+    border-radius: 7px; padding: 8px 14px; font-size: .8rem; font-weight: 600;
+    text-decoration: none; white-space: nowrap;
+  }
+  .sheet-link:hover { border-color: var(--crimson); color: var(--crimson); }
 
   .hint { color: var(--ink-dim); font-size: .75rem; margin: 6px 0 14px; }
-  .hint kbd { background: var(--navy-3); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; font-size: .7rem; }
+  .hint kbd { background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; font-size: .7rem; color: var(--ink); }
 
-  .grid-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--navy-2); }
+  .grid-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); box-shadow: 0 1px 3px rgba(16,28,51,.06); }
   table { border-collapse: collapse; width: 100%; min-width: 1180px; }
   thead th {
     position: sticky; top: 0; z-index: 2;
-    background: var(--navy-3); color: var(--ink-dim);
+    background: var(--surface-2); color: var(--ink-dim);
     font-size: .68rem; text-transform: uppercase; letter-spacing: .08em;
     padding: 8px 6px; text-align: left; white-space: nowrap;
-    border-bottom: 2px solid var(--crimson-dim);
+    border-bottom: 2px solid var(--crimson);
   }
   tbody td { border-bottom: 1px solid var(--line); padding: 2px 3px; vertical-align: middle; }
   tbody tr:last-child td { border-bottom: none; }
-  tbody tr:hover td { background: rgba(200,50,62,.05); }
+  tbody tr:hover td { background: rgba(200,50,62,.04); }
 
   input, select {
     width: 100%; background: transparent; border: 1px solid transparent; border-radius: 5px;
     color: var(--ink); font-size: .85rem; padding: 7px 6px; font-family: inherit;
   }
   input:hover, select:hover { border-color: var(--line); }
-  input:focus, select:focus { outline: none; border-color: var(--crimson); background: var(--navy); }
-  input::placeholder { color: #55627e; }
+  input:focus, select:focus { outline: none; border-color: var(--crimson); background: var(--surface-2); }
+  input::placeholder { color: #9aa1b0; }
   select { appearance: none; -webkit-appearance: none; cursor: pointer; }
-  select option { background: var(--navy-2); color: var(--ink); }
-  input[type="date"] { min-width: 128px; color-scheme: dark; }
+  select option { background: var(--surface); color: var(--ink); }
+  input[type="date"] { min-width: 128px; color-scheme: light; }
   input[type="number"] { -moz-appearance: textfield; }
   input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; }
 
@@ -70,7 +78,7 @@
   .col-del    { width: 34px; }
 
   .yn-btn {
-    width: 100%; border: 1px solid var(--line); background: var(--navy); color: var(--ink-dim);
+    width: 100%; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-dim);
     border-radius: 5px; padding: 7px 0; font-size: .78rem; font-weight: 700; cursor: pointer;
     letter-spacing: .05em;
   }
@@ -78,26 +86,27 @@
   .yn-btn.on { background: var(--crimson); border-color: var(--crimson); color: #fff; }
 
   .del-btn {
-    border: none; background: transparent; color: #55627e; cursor: pointer;
+    border: none; background: transparent; color: #9aa1b0; cursor: pointer;
     font-size: 1rem; padding: 6px; border-radius: 5px; line-height: 1;
   }
-  .del-btn:hover { color: var(--err); background: rgba(224,82,82,.1); }
+  .del-btn:hover { color: var(--err); background: rgba(201,64,64,.1); }
 
   .footer-bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
-    background: var(--navy-2); border-top: 1px solid var(--line);
+    background: var(--surface); border-top: 1px solid var(--line);
     display: flex; align-items: center; gap: 14px; padding: 12px 16px;
+    box-shadow: 0 -1px 4px rgba(16,28,51,.05);
   }
   .footer-bar .count { color: var(--ink-dim); font-size: .82rem; }
   .footer-bar .count b { color: var(--ink); }
   .spacer { flex: 1; }
   .btn {
-    border: 1px solid var(--line); background: var(--navy-3); color: var(--ink);
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
     border-radius: 7px; padding: 10px 16px; font-size: .85rem; cursor: pointer; font-weight: 600;
   }
   .btn:hover { border-color: var(--ink-dim); }
   .btn-submit { background: var(--crimson); border-color: var(--crimson); color: #fff; letter-spacing: .03em; }
-  .btn-submit:hover { background: #d94450; border-color: #d94450; }
+  .btn-submit:hover { background: #b52933; border-color: #b52933; }
   .btn-submit:disabled { opacity: .45; cursor: not-allowed; }
 
   .status { font-size: .82rem; min-height: 1.1em; }
@@ -106,15 +115,16 @@
 
   /* modal for submit result */
   .overlay {
-    position: fixed; inset: 0; background: rgba(6,10,20,.7); display: none;
+    position: fixed; inset: 0; background: rgba(16,20,30,.45); display: none;
     align-items: center; justify-content: center; z-index: 10;
   }
   .overlay.show { display: flex; }
   .modal {
-    background: var(--navy-2); border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
     padding: 22px 24px; max-width: 340px; text-align: center;
+    box-shadow: 0 8px 24px rgba(16,28,51,.15);
   }
-  .modal h2 { font-size: 1rem; margin-bottom: 8px; }
+  .modal h2 { font-size: 1rem; margin-bottom: 8px; color: var(--navy); }
   .modal p { color: var(--ink-dim); font-size: .85rem; margin-bottom: 16px; }
 </style>
 </head>
@@ -123,8 +133,9 @@
 <header>
   <h1>Captain's <span class="accent">Quick Add</span></h1>
   <span class="sub">In Stock inventory entry</span>
+  <a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1zSd87OlxqrWOzEjPd6TAm4MYn57fhrccdmd4xYwvtXA/edit?gid=171839479#gid=171839479" target="_blank" rel="noopener">Open Sheet ↗</a>
 </header>
-<p class="hint"><kbd>Tab</kbd> / <kbd>Enter</kbd> moves to the next cell — finishing a row starts a new one. Blank Qty = 1, blank Owner = BL.</p>
+<p class="hint"><kbd>Tab</kbd> / <kbd>Enter</kbd> moves to the next cell. Start typing in a row to spawn the next one below it. Blank Qty = 1, blank Owner = BL.</p>
 
 <div class="grid-wrap">
   <table id="grid">
@@ -292,23 +303,24 @@ function addRow(focusName){
     });
   });
 
-  // Leaving the Featured button on the LAST row spawns a fresh row
-  btnFeat.addEventListener("keydown", e => {
-    if ((e.key === "Tab" && !e.shiftKey) || e.key === "Enter") {
-      const isLastRow = tr === tbody.lastElementChild;
-      if (isLastRow && inName.value.trim() !== "") {
-        e.preventDefault();
-        addRow(true);
-        updateCount();
-      }
-    }
-  });
-
   inName.addEventListener("input", updateCount);
   if (focusName) inName.focus();
   updateCount();
   return tr;
 }
+
+// Any edit (typing, dropdown change, Y/N toggle) inside the LAST row
+// spawns a fresh blank row below it, once per row.
+function maybeSpawnRow(tr){
+  if (!tr || !tbody.contains(tr)) return;
+  if (tr === tbody.lastElementChild && tr.dataset.spawned !== "1") {
+    tr.dataset.spawned = "1";
+    addRow(false);
+    updateCount();
+  }
+}
+tbody.addEventListener("input", e => maybeSpawnRow(e.target.closest("tr")));
+tbody.addEventListener("change", e => maybeSpawnRow(e.target.closest("tr")));
 
 function cell(cls){ const td = document.createElement("td"); if (cls) td.className = cls; return td; }
 function textInput(placeholder, cls){
@@ -328,6 +340,7 @@ function toggleYN(b){
   b.dataset.on = on ? "0" : "1";
   b.textContent = on ? "N" : "Y";
   b.classList.toggle("on", !on);
+  maybeSpawnRow(b.closest("tr"));
 }
 
 function focusNext(el){
