@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CTT Quick Add — Inventory</title>
+<style>
+  :root {
+    --navy: #101c33;
+    --navy-2: #16243f;
+    --navy-3: #1e2f52;
+    --crimson: #c8323e;
+    --crimson-dim: #8f2530;
+    --gold: #e8b64c;
+    --ink: #e8ecf4;
+    --ink-dim: #93a0b8;
+    --line: #2a3a5e;
+    --ok: #3fae6a;
+    --err: #e05252;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--navy); color: var(--ink); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  body { padding: 16px 14px 90px; }
+
+  header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
+  header h1 { font-size: 1.15rem; letter-spacing: .06em; text-transform: uppercase; }
+  header h1 .accent { color: var(--crimson); }
+  header .sub { color: var(--ink-dim); font-size: .8rem; }
+
+  .hint { color: var(--ink-dim); font-size: .75rem; margin: 6px 0 14px; }
+  .hint kbd { background: var(--navy-3); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; font-size: .7rem; }
+
+  .grid-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--navy-2); }
+  table { border-collapse: collapse; width: 100%; min-width: 1180px; }
+  thead th {
+    position: sticky; top: 0; z-index: 2;
+    background: var(--navy-3); color: var(--ink-dim);
+    font-size: .68rem; text-transform: uppercase; letter-spacing: .08em;
+    padding: 8px 6px; text-align: left; white-space: nowrap;
+    border-bottom: 2px solid var(--crimson-dim);
+  }
+  tbody td { border-bottom: 1px solid var(--line); padding: 2px 3px; vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: rgba(200,50,62,.05); }
+
+  input, select {
+    width: 100%; background: transparent; border: 1px solid transparent; border-radius: 5px;
+    color: var(--ink); font-size: .85rem; padding: 7px 6px; font-family: inherit;
+  }
+  input:hover, select:hover { border-color: var(--line); }
+  input:focus, select:focus { outline: none; border-color: var(--crimson); background: var(--navy); }
+  input::placeholder { color: #55627e; }
+  select { appearance: none; -webkit-appearance: none; cursor: pointer; }
+  select option { background: var(--navy-2); color: var(--ink); }
+  input[type="date"] { min-width: 128px; color-scheme: dark; }
+  input[type="number"] { -moz-appearance: textfield; }
+  input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .col-name   { min-width: 240px; }
+  .col-num    { width: 72px; }
+  .col-line   { width: 110px; }
+  .col-lic    { min-width: 170px; }
+  .col-chase  { width: 140px; }
+  .col-pc     { width: 84px; }
+  .col-qty    { width: 60px; }
+  .col-size   { width: 110px; }
+  .col-date   { width: 140px; }
+  .col-owner  { width: 66px; }
+  .col-yn     { width: 60px; text-align: center; }
+  .col-del    { width: 34px; }
+
+  .yn-btn {
+    width: 100%; border: 1px solid var(--line); background: var(--navy); color: var(--ink-dim);
+    border-radius: 5px; padding: 7px 0; font-size: .78rem; font-weight: 700; cursor: pointer;
+    letter-spacing: .05em;
+  }
+  .yn-btn:focus { outline: none; border-color: var(--crimson); }
+  .yn-btn.on { background: var(--crimson); border-color: var(--crimson); color: #fff; }
+
+  .del-btn {
+    border: none; background: transparent; color: #55627e; cursor: pointer;
+    font-size: 1rem; padding: 6px; border-radius: 5px; line-height: 1;
+  }
+  .del-btn:hover { color: var(--err); background: rgba(224,82,82,.1); }
+
+  .footer-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+    background: var(--navy-2); border-top: 1px solid var(--line);
+    display: flex; align-items: center; gap: 14px; padding: 12px 16px;
+  }
+  .footer-bar .count { color: var(--ink-dim); font-size: .82rem; }
+  .footer-bar .count b { color: var(--ink); }
+  .spacer { flex: 1; }
+  .btn {
+    border: 1px solid var(--line); background: var(--navy-3); color: var(--ink);
+    border-radius: 7px; padding: 10px 16px; font-size: .85rem; cursor: pointer; font-weight: 600;
+  }
+  .btn:hover { border-color: var(--ink-dim); }
+  .btn-submit { background: var(--crimson); border-color: var(--crimson); color: #fff; letter-spacing: .03em; }
+  .btn-submit:hover { background: #d94450; border-color: #d94450; }
+  .btn-submit:disabled { opacity: .45; cursor: not-allowed; }
+
+  .status { font-size: .82rem; min-height: 1.1em; }
+  .status.ok { color: var(--ok); }
+  .status.err { color: var(--err); }
+
+  /* modal for submit result */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(6,10,20,.7); display: none;
+    align-items: center; justify-content: center; z-index: 10;
+  }
+  .overlay.show { display: flex; }
+  .modal {
+    background: var(--navy-2); border: 1px solid var(--line); border-radius: 10px;
+    padding: 22px 24px; max-width: 340px; text-align: center;
+  }
+  .modal h2 { font-size: 1rem; margin-bottom: 8px; }
+  .modal p { color: var(--ink-dim); font-size: .85rem; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Captain's <span class="accent">Quick Add</span></h1>
+  <span class="sub">In Stock inventory entry</span>
+</header>
+<p class="hint"><kbd>Tab</kbd> / <kbd>Enter</kbd> moves to the next cell — finishing a row starts a new one. Blank Qty = 1, blank Owner = BL.</p>
+
+<div class="grid-wrap">
+  <table id="grid">
+    <thead>
+      <tr>
+        <th class="col-name">Name</th>
+        <th class="col-num">#</th>
+        <th class="col-line">Line</th>
+        <th class="col-lic">License</th>
+        <th class="col-chase">Chase / LE</th>
+        <th class="col-pc">Piece Ct</th>
+        <th class="col-qty">Qty</th>
+        <th class="col-size">Size</th>
+        <th class="col-date">Date Added</th>
+        <th class="col-owner">Owner</th>
+        <th class="col-yn">Listed</th>
+        <th class="col-yn">Featured</th>
+        <th class="col-del"></th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+</div>
+
+<div class="footer-bar">
+  <span class="count"><b id="rowCount">0</b> item(s) ready</span>
+  <span id="status" class="status"></span>
+  <span class="spacer"></span>
+  <button class="btn" id="addRowBtn" type="button">+ Add row</button>
+  <button class="btn btn-submit" id="submitBtn" type="button">Submit to Inventory</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modalTitle"></h2>
+    <p id="modalMsg"></p>
+    <button class="btn" id="modalClose" type="button">Close</button>
+  </div>
+</div>
+
+<datalist id="lineList"></datalist>
+<datalist id="licenseList"></datalist>
+
+<script>
+/* ========== CONFIG ========== */
+// Paste your deployed Apps Script Web App URL here (the addInventoryItems handler):
+const SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+/* Periodically-updated autocomplete lists — refresh these occasionally from the sheet */
+const LINES = ["Ad Icons","Anime","Animation","Books","Comics","DC","DC Comics","Disney","Games","Hello Kitty","Horror","Horror Doodles","Marvel","Movies","NFT","Pokemon","Rocks","Sports","Star Wars","Television"];
+const LICENSES = ["Alien","Alien v Predator: Requiem","Attack on Titan","Avengers: Age of Ultron","Avengers: Endgame","Batman","Batman: The Animated Series","Bleach","Bleach: Thousand-Year Blood War","Blue Beetle","Bluey","Breaking Bad","Cap'n Crunch","Chainsaw Man","Coca-Cola","Cyberpunk: Edgerunners","Daft Punk","DC Comics","Deadpool","Death Metal","Death Note","Demon Slayer","Doctor Who","Dragon Ball Daima","Dragon Ball Super","Dragon Ball Z","Dum-Dums","Elden Ring","Emerald City Comic Con","Five Nights at Freddy's","Friday the 13th","Friendly Neighborhood Spider-Man","Geico","General Mills","Ghost Face","Godzilla v Kong","Gravity Falls","Guardians of the Galaxy","Hazbin Hotel","Hello Kitty & Friends","Honey Nut Cheerios","Hostess Ding Dongs","Hostess Twinkies","Hot Topic","Invincible","Jojo's Bizarre Adventure","Jujutsu Kaisen","Kaiju No. 8","KFC","KPOP: Demon Hunters","Lilo & Stitch","Marvel Comics","Marvel Zombies","MLB","Mob Psycho 100","Monopoly","My Hero Academia","Naruto","Naruto Shippuden","New Classics","New York Comic Con","NFL","One Piece","Pillsbury","Pokemon","Resident Evil","Rugrats","SAW","Silent Hill 2","Smokey Bear","Solo Leveling","Sonic","Sour Patch Kids","Spider-Man","Spider-Man: Brand New Day","Spider-Man: Homecoming","Spider-Man: Into the Spider-Verse","Spongebob Squarepants","Street Fighter 6","Supernatural","Terrifier","The Amazing World of Gumball","The Falcon and the Winter Soldier","The Last Ronin","TMNT","Trick r Treat","Venom","Vocaloid","Watchmen","WWE","X-Men"];
+const CHASE_OPTIONS = ["","Chase","Glow Chase","Blacklight Chase","Limited Edition"];
+const SIZE_OPTIONS  = ["","2-PACK","3-PACK","4-PACK","6-INCH","10-INCH","PREMIUM","SUPER"];
+const OTHER = "__other__";
+
+/* ========== SETUP ========== */
+function fillDatalist(id, arr){
+  const dl = document.getElementById(id);
+  dl.innerHTML = arr.map(v => `<option value="${v.replace(/"/g,'&quot;')}">`).join("");
+}
+fillDatalist("lineList", LINES);
+fillDatalist("licenseList", LICENSES);
+
+function todayEST(){
+  // Current date in America/New_York regardless of device timezone
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year:"numeric", month:"2-digit", day:"2-digit" }).format(new Date());
+  return parts; // en-CA gives YYYY-MM-DD
+}
+
+const tbody = document.getElementById("rows");
+let rowId = 0;
+
+function makeSelect(cls, options, otherLabel){
+  const sel = document.createElement("select");
+  sel.className = cls;
+  options.forEach(v => {
+    const o = document.createElement("option");
+    o.value = v;
+    o.textContent = v === "" ? "—" : v;
+    sel.appendChild(o);
+  });
+  if (otherLabel){
+    const o = document.createElement("option");
+    o.value = OTHER;
+    o.textContent = otherLabel;
+    sel.appendChild(o);
+  }
+  return sel;
+}
+
+function addRow(focusName){
+  const id = ++rowId;
+  const tr = document.createElement("tr");
+  tr.dataset.id = id;
+
+  // --- cells ---
+  const tdName = cell(); const inName = textInput("Pop name", "col-name"); tdName.appendChild(inName);
+  const tdNum  = cell(); const inNum  = textInput("#", "col-num"); tdNum.appendChild(inNum);
+  const tdLine = cell(); const inLine = textInput("Line", "col-line"); inLine.setAttribute("list","lineList"); tdLine.appendChild(inLine);
+  const tdLic  = cell(); const inLic  = textInput("License", "col-lic"); inLic.setAttribute("list","licenseList"); tdLic.appendChild(inLic);
+
+  const tdChase = cell();
+  const selChase = makeSelect("col-chase", CHASE_OPTIONS, "Other…");
+  const inChaseOther = textInput("Custom…", "col-chase"); inChaseOther.style.display = "none";
+  tdChase.appendChild(selChase); tdChase.appendChild(inChaseOther);
+  selChase.addEventListener("change", () => {
+    const isOther = selChase.value === OTHER;
+    inChaseOther.style.display = isOther ? "" : "none";
+    if (isOther) inChaseOther.focus();
+  });
+
+  const tdPC = cell(); const inPC = textInput("", "col-pc"); inPC.inputMode = "numeric"; tdPC.appendChild(inPC);
+  // Piece Count → auto-select Limited Edition; clearing it deselects LE
+  inPC.addEventListener("input", () => {
+    if (inPC.value.trim() !== "") {
+      if (selChase.value !== OTHER) selChase.value = "Limited Edition";
+    } else if (selChase.value === "Limited Edition") {
+      selChase.value = "";
+    }
+  });
+
+  const tdQty = cell(); const inQty = textInput("1", "col-qty"); inQty.inputMode = "numeric"; tdQty.appendChild(inQty);
+
+  const tdSize = cell();
+  const selSize = makeSelect("col-size", SIZE_OPTIONS, "Other…");
+  const inSizeOther = textInput("Custom…", "col-size"); inSizeOther.style.display = "none";
+  tdSize.appendChild(selSize); tdSize.appendChild(inSizeOther);
+  selSize.addEventListener("change", () => {
+    const isOther = selSize.value === OTHER;
+    inSizeOther.style.display = isOther ? "" : "none";
+    if (isOther) inSizeOther.focus();
+  });
+
+  const tdDate = cell();
+  const inDate = document.createElement("input");
+  inDate.type = "date"; inDate.className = "col-date"; inDate.value = todayEST();
+  tdDate.appendChild(inDate);
+
+  const tdOwner = cell(); const inOwner = textInput("BL", "col-owner"); tdOwner.appendChild(inOwner);
+
+  const tdListed = cell("col-yn"); const btnListed = ynButton(); tdListed.appendChild(btnListed);
+  const tdFeat   = cell("col-yn"); const btnFeat   = ynButton(); tdFeat.appendChild(btnFeat);
+
+  const tdDel = cell("col-del");
+  const del = document.createElement("button");
+  del.type = "button"; del.className = "del-btn"; del.title = "Remove row"; del.textContent = "✕"; del.tabIndex = -1;
+  del.addEventListener("click", () => {
+    tr.remove();
+    if (!tbody.children.length) addRow(true);
+    updateCount();
+  });
+  tdDel.appendChild(del);
+
+  tr.append(tdName, tdNum, tdLine, tdLic, tdChase, tdPC, tdQty, tdSize, tdDate, tdOwner, tdListed, tdFeat, tdDel);
+  tbody.appendChild(tr);
+
+  // Enter behaves like Tab within the grid
+  tr.querySelectorAll("input, select, .yn-btn").forEach(el => {
+    el.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        if (el.classList.contains("yn-btn")) return; // Enter toggles the button natively
+        e.preventDefault();
+        focusNext(el);
+      }
+    });
+  });
+
+  // Leaving the Featured button on the LAST row spawns a fresh row
+  btnFeat.addEventListener("keydown", e => {
+    if ((e.key === "Tab" && !e.shiftKey) || e.key === "Enter") {
+      const isLastRow = tr === tbody.lastElementChild;
+      if (isLastRow && inName.value.trim() !== "") {
+        e.preventDefault();
+        addRow(true);
+        updateCount();
+      }
+    }
+  });
+
+  inName.addEventListener("input", updateCount);
+  if (focusName) inName.focus();
+  updateCount();
+  return tr;
+}
+
+function cell(cls){ const td = document.createElement("td"); if (cls) td.className = cls; return td; }
+function textInput(placeholder, cls){
+  const i = document.createElement("input");
+  i.type = "text"; i.placeholder = placeholder; i.className = cls; i.autocomplete = "off";
+  return i;
+}
+function ynButton(){
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "yn-btn"; b.textContent = "N"; b.dataset.on = "0";
+  b.addEventListener("click", () => toggleYN(b));
+  b.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleYN(b); } });
+  return b;
+}
+function toggleYN(b){
+  const on = b.dataset.on === "1";
+  b.dataset.on = on ? "0" : "1";
+  b.textContent = on ? "N" : "Y";
+  b.classList.toggle("on", !on);
+}
+
+function focusNext(el){
+  const focusables = Array.from(tbody.querySelectorAll("input, select, .yn-btn"))
+    .filter(x => x.offsetParent !== null && x.tabIndex !== -1);
+  const idx = focusables.indexOf(el);
+  if (idx > -1 && idx < focusables.length - 1) focusables[idx + 1].focus();
+}
+
+/* ========== COLLECT & SUBMIT ========== */
+function readRow(tr){
+  const [inName, inNum, inLine, inLic] = tr.querySelectorAll("input");
+  const inputs = tr.querySelectorAll("input");
+  const selects = tr.querySelectorAll("select");
+  const ynBtns = tr.querySelectorAll(".yn-btn");
+  // input order: name, num, line, lic, chaseOther, pc, qty, sizeOther, date, owner
+  const chaseOther = inputs[4], pc = inputs[5], qty = inputs[6], sizeOther = inputs[7], date = inputs[8], owner = inputs[9];
+  const selChase = selects[0], selSize = selects[1];
+
+  const name = inputs[0].value.trim();
+  if (!name) return null;
+
+  let chase = selChase.value === OTHER ? chaseOther.value.trim() : selChase.value;
+  let size  = selSize.value  === OTHER ? sizeOther.value.trim()  : selSize.value;
+  let qtyVal = parseInt(qty.value, 10);
+  if (isNaN(qtyVal) || qtyVal < 1) qtyVal = 1;
+
+  return {
+    name,
+    number: inputs[1].value.trim(),
+    line: inputs[2].value.trim(),
+    license: inputs[3].value.trim(),
+    qty: qtyVal,
+    owner: owner.value.trim() || "BL",
+    dateAdded: date.value || todayEST(),
+    ebayListed: ynBtns[0].dataset.on === "1",
+    size,
+    chase,
+    pieceCount: pc.value.trim(),
+    featured: ynBtns[1].dataset.on === "1"
+  };
+}
+
+function collectRows(){
+  return Array.from(tbody.children).map(readRow).filter(Boolean);
+}
+
+function updateCount(){
+  document.getElementById("rowCount").textContent = collectRows().length;
+}
+
+const statusEl = document.getElementById("status");
+const submitBtn = document.getElementById("submitBtn");
+
+document.getElementById("addRowBtn").addEventListener("click", () => addRow(true));
+
+submitBtn.addEventListener("click", async () => {
+  const items = collectRows();
+  if (!items.length) { setStatus("Nothing to submit — fill in at least one Name.", true); return; }
+  if (SCRIPT_URL.startsWith("PASTE_")) { setStatus("Script URL not set — edit SCRIPT_URL in the file.", true); return; }
+
+  submitBtn.disabled = true;
+  setStatus("Submitting " + items.length + " item(s)…");
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids CORS preflight for Apps Script
+      body: JSON.stringify({ action: "addInventoryItems", items })
+    });
+    const out = await res.json();
+    if (out && out.ok) {
+      showModal("Added to Inventory", out.added + " item(s) written to the In Stock sheet.");
+      tbody.innerHTML = "";
+      addRow(true);
+      setStatus("");
+    } else {
+      throw new Error(out && out.error ? out.error : "Unexpected response");
+    }
+  } catch (err) {
+    setStatus("Submit failed: " + err.message, true);
+  } finally {
+    submitBtn.disabled = false;
+    updateCount();
+  }
+});
+
+function setStatus(msg, isErr){
+  statusEl.textContent = msg;
+  statusEl.className = "status" + (isErr ? " err" : msg ? " ok" : "");
+}
+
+const overlay = document.getElementById("overlay");
+function showModal(title, msg){
+  document.getElementById("modalTitle").textContent = title;
+  document.getElementById("modalMsg").textContent = msg;
+  overlay.classList.add("show");
+}
+document.getElementById("modalClose").addEventListener("click", () => overlay.classList.remove("show"));
+
+/* start with one blank row */
+addRow(true);
+</script>
+</body>
+</html>
