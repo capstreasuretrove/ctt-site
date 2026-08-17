@@ -75,9 +75,23 @@ function isNew(added, today) {
 function rawCell(r, i) { return (r && r.c && r.c[i]) ? r.c[i] : null; }
 function cell(r, i) { var c = rawCell(r, i); return c ? c.v : null; }
 function cellFmt(r, i) { var c = rawCell(r, i); if (!c) return null; return (c.f !== undefined && c.f !== null) ? c.f : c.v; }
-function cellStr(r, i) { var v = cell(r, i); return (v === null || v === undefined) ? '' : String(v).trim(); }
-function cellNum(r, i) { var v = cell(r, i); var n = parseFloat(v); return isNaN(n) ? 0 : n; }
-function cellBool(r, i) { var v = cell(r, i); return v === true || (typeof v === 'string' && v.toLowerCase().trim() === 'true'); }
+// Prefers the raw value, but falls back to the formatted value when raw is
+// missing/blank. This covers cells where the sheet's declared column type
+// (e.g. "number") doesn't match how a value was actually entered (e.g. the
+// desktop app writing the Autographs "#" as plain text) — gviz can return
+// v:null for a mismatched cell while still populating f with the text.
+function cellAny(r, i) {
+  var c = rawCell(r, i);
+  if (!c) return null;
+  var v = c.v;
+  if (v === null || v === undefined || v === '') {
+    v = (c.f !== undefined && c.f !== null && c.f !== '') ? c.f : v;
+  }
+  return v;
+}
+function cellStr(r, i) { var v = cellAny(r, i); return (v === null || v === undefined) ? '' : String(v).trim(); }
+function cellNum(r, i) { var v = cellAny(r, i); var n = parseFloat(v); return isNaN(n) ? 0 : n; }
+function cellBool(r, i) { var v = cellAny(r, i); return v === true || (typeof v === 'string' && v.toLowerCase().trim() === 'true'); }
 function parseSheetDate(v) {
   if (v === null || v === undefined) return null;
   var s = String(v).trim();
@@ -382,26 +396,74 @@ function sortArr(arr, mode) {
 }
 
 // -------------------------------------------------------------- POPS PANE --
+// Keyword aliases: typing one of these words filters to items with that
+// attribute, even if the word itself never appears in the item's own text.
+var POPS_SEARCH_ALIASES = {
+  'chase': function (p, today) { return !!p.chase; },
+  'chases': function (p, today) { return !!p.chase; },
+  'featured': function (p, today) { return !!p.featured; },
+  'new': function (p, today) { return isNew(p.added, today); },
+  'new arrival': function (p, today) { return isNew(p.added, today); },
+  'new arrivals': function (p, today) { return isNew(p.added, today); },
+};
+function popsSearchHaystack(p) {
+  return [p.name, p.number, p.line, p.license, p.size, p.chase, p.pieces].join(' ').toLowerCase();
+}
+function sortPops(arr, mode) {
+  function byNameAsc(a, b) {
+    var an = (a.name || '').toLowerCase(), bn = (b.name || '').toLowerCase();
+    if (an < bn) return -1;
+    if (an > bn) return 1;
+    return 0;
+  }
+  function byField(field, dir) {
+    return function (a, b) {
+      var av = (a[field] || '').toString().toLowerCase();
+      var bv = (b[field] || '').toString().toLowerCase();
+      if (av === bv) return byNameAsc(a, b);
+      if (dir === 'za') return av < bv ? 1 : -1;
+      return av < bv ? -1 : 1;
+    };
+  }
+  var copy = arr.slice();
+  switch (mode) {
+    case 'newest':
+      copy.sort(function (a, b) {
+        var ad = a.added ? a.added.getTime() : 0, bd = b.added ? b.added.getTime() : 0;
+        if (ad !== bd) return bd - ad;
+        return byNameAsc(a, b);
+      });
+      break;
+    case 'featured':
+      copy.sort(function (a, b) {
+        var af = a.featured ? 1 : 0, bf = b.featured ? 1 : 0;
+        if (af !== bf) return bf - af;
+        return byNameAsc(a, b);
+      });
+      break;
+    case 'name-za':
+      copy.sort(function (a, b) { return -byNameAsc(a, b); });
+      break;
+    case 'line-az': copy.sort(byField('line', 'az')); break;
+    case 'line-za': copy.sort(byField('line', 'za')); break;
+    case 'license-az': copy.sort(byField('license', 'az')); break;
+    case 'license-za': copy.sort(byField('license', 'za')); break;
+    case 'name-az':
+    default:
+      copy.sort(byNameAsc);
+  }
+  return copy;
+}
 function filterPops() {
-  var s = document.getElementById('invSearch').value.toLowerCase();
-  var line = document.getElementById('invLine').value;
-  var license = document.getElementById('invLicense').value;
-  var badge = document.getElementById('invBadge').value;
-  var newOnly = document.getElementById('invNewOnly').checked;
+  var s = document.getElementById('invSearch').value.toLowerCase().trim();
   var today = startOfToday();
+  var alias = POPS_SEARCH_ALIASES[s];
   var f = allPops.filter(function (p) {
-    if (s) {
-      var hay = (p.name + ' ' + p.number + ' ' + p.line).toLowerCase();
-      if (hay.indexOf(s) === -1) return false;
-    }
-    if (line && p.line !== line) return false;
-    if (license && p.license !== license) return false;
-    if (badge === 'chase' && !p.chase) return false;
-    if (badge === 'size' && !p.size) return false;
-    if (newOnly && !isNew(p.added, today)) return false;
-    return true;
+    if (!s) return true;
+    if (popsSearchHaystack(p).indexOf(s) !== -1) return true;
+    return alias ? alias(p, today) : false;
   });
-  f = sortArr(f, document.getElementById('invSort').value);
+  f = sortPops(f, document.getElementById('invSort').value);
   _lastPopsFiltered = f;
   document.getElementById('invCount').textContent = f.length + ' item' + (f.length !== 1 ? 's' : '') + ' found';
   renderInvGrid(f);
@@ -409,7 +471,6 @@ function filterPops() {
   document.getElementById('sTotal').textContent = f.length;
   document.getElementById('sUnits').textContent = f.reduce(function (sum, p) { return sum + p.qty; }, 0);
   document.getElementById('sLines').textContent = unique(f, 'line').length;
-  updateFilterChips();
 }
 function renderInvGrid(pops) {
   var g = document.getElementById('invGrid');
@@ -492,31 +553,6 @@ function renderAutoList(autos) {
       + '<td>' + a.qty + '</td>'
       + '</tr>';
   }).join('');
-}
-
-// ---------------------------------------------------------- FILTER CHIPS --
-function updateFilterChips() {
-  var chips = [];
-  var line = document.getElementById('invLine').value;
-  var license = document.getElementById('invLicense').value;
-  var badge = document.getElementById('invBadge').value;
-  var newOnly = document.getElementById('invNewOnly').checked;
-  if (line) chips.push({ label: 'Line: ' + line, clear: function () { document.getElementById('invLine').value = ''; } });
-  if (license) chips.push({ label: 'License: ' + license, clear: function () { document.getElementById('invLicense').value = ''; } });
-  if (badge) chips.push({ label: badge === 'chase' ? 'Chases Only' : 'Non-Standard Size', clear: function () { document.getElementById('invBadge').value = ''; } });
-  if (newOnly) chips.push({ label: 'New arrivals only', clear: function () { document.getElementById('invNewOnly').checked = false; } });
-  var wrap = document.getElementById('invFilterChips');
-  wrap.innerHTML = '';
-  chips.forEach(function (c) {
-    var span = document.createElement('span');
-    span.className = 'filter-chip';
-    span.innerHTML = esc(c.label) + ' <button type="button">&times;</button>';
-    span.querySelector('button').addEventListener('click', function () { c.clear(); filterPops(); });
-    wrap.appendChild(span);
-  });
-  var countEl = document.getElementById('invFilterCount');
-  countEl.textContent = chips.length ? ' (' + chips.length + ')' : '';
-  document.getElementById('invFilterBtn').classList.toggle('on', chips.length > 0);
 }
 
 // ------------------------------------------------------------ DETAIL MODAL --
@@ -607,14 +643,7 @@ function bindUI() {
   document.getElementById('itAutos').addEventListener('click', function () { switchInvMode('autos'); });
 
   document.getElementById('invSearch').addEventListener('input', filterPops);
-  document.getElementById('invLine').addEventListener('change', filterPops);
-  document.getElementById('invLicense').addEventListener('change', filterPops);
-  document.getElementById('invBadge').addEventListener('change', filterPops);
-  document.getElementById('invNewOnly').addEventListener('change', filterPops);
   document.getElementById('invSort').addEventListener('change', filterPops);
-  document.getElementById('invFilterBtn').addEventListener('click', function () {
-    document.getElementById('invFilterPanel').classList.toggle('show');
-  });
   document.getElementById('invBtnGrid').addEventListener('click', function () { setInvView('inv', 'grid'); });
   document.getElementById('invBtnList').addEventListener('click', function () { setInvView('inv', 'list'); });
 
@@ -657,11 +686,7 @@ function loadAll() {
   loadPops(function (err) {
     hide('loadInv');
     if (err) { showErr('errInv', 'Could not load inventory right now. Please check back soon.'); }
-    else {
-      populateSelect('invLine', unique(allPops, 'line'));
-      populateSelect('invLicense', unique(allPops, 'license'));
-      filterPops();
-    }
+    else { filterPops(); }
     renderGrails();
     renderWhatsNew();
   });

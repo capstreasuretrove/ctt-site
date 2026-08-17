@@ -120,7 +120,7 @@
     <div class="inv-toggle" id="invToggle">
       <button class="itbtn on" id="itPops" data-mode="pops">
         <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
-        Standard Pops
+        Pops
       </button>
       <button class="itbtn" id="itAutos" data-mode="autos">
         <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 12l7-7 3 3-7 7H3z"/><path d="M10 5l1-3 3 1-1 3z"/></svg>
@@ -131,25 +131,23 @@
     <!-- POPS PANE -->
     <div class="inv-pane on" id="paneInv">
       <div class="toolbar">
-        <input type="text" id="invSearch" placeholder="Search name, number, or line…">
-        <button id="invFilterBtn" class="filter-btn">
-          <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="2" y1="4" x2="14" y2="4"/><line x1="4" y1="8" x2="12" y2="8"/><line x1="6" y1="12" x2="10" y2="12"/></svg>
-          Filters<span id="invFilterCount"></span>
-        </button>
-        <select id="invSort"><option value="name-az">Name: A-Z</option><option value="name-za">Name: Z-A</option><option value="line-az" selected>Line: A-Z</option><option value="line-za">Line: Z-A</option><option value="license-az">License: A-Z</option><option value="license-za">License: Z-A</option></select>
+        <input type="text" id="invSearch" placeholder="Search name, number, line, license…">
+        <select id="invSort">
+          <option value="newest" selected>Newest</option>
+          <option value="featured">Featured</option>
+          <option value="name-az">Name A-Z</option>
+          <option value="name-za">Name Z-A</option>
+          <option value="line-az">Line A-Z</option>
+          <option value="line-za">Line Z-A</option>
+          <option value="license-az">License A-Z</option>
+          <option value="license-za">License Z-A</option>
+        </select>
         <span class="rcount" id="invCount"></span>
         <div class="vtoggle">
           <button class="vbtn on" id="invBtnGrid" title="Gallery"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg></button>
           <button class="vbtn" id="invBtnList" title="List"><svg viewBox="0 0 16 16"><line x1="5" y1="4" x2="15" y2="4"/><line x1="5" y1="8" x2="15" y2="8"/><line x1="5" y1="12" x2="15" y2="12"/><circle cx="2" cy="4" r="1" style="fill:currentColor;stroke:none"/><circle cx="2" cy="8" r="1" style="fill:currentColor;stroke:none"/><circle cx="2" cy="12" r="1" style="fill:currentColor;stroke:none"/></svg></button>
         </div>
       </div>
-      <div class="filter-panel" id="invFilterPanel">
-        <select id="invLine"><option value="">All Lines</option></select>
-        <select id="invLicense"><option value="">All Licenses</option></select>
-        <select id="invBadge"><option value="">All Items</option><option value="chase">Chases Only</option><option value="size">Non-Standard Size</option></select>
-        <label class="filter-check"><input type="checkbox" id="invNewOnly"> New arrivals only</label>
-      </div>
-      <div class="filter-chips" id="invFilterChips"></div>
       <div class="loading" id="loadInv">Unlocking the treasure chest…</div>
       <div class="errmsg" id="errInv" style="display:none;"></div>
       <div class="pgrid" id="invGrid"></div>
