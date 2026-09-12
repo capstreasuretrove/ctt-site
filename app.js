@@ -66,34 +66,63 @@ function fmtDateRange(start, end) {
   return fmtDate(start) + ' – ' + fmtDate(end);
 }
 function isNew(added, today) {
-  // A blank "Date Added" cell shows up on the newest rows added via the
-  // desktop app (it isn't writing that column on insert) -- treat "no date
-  // on file" as "just added" rather than "unknown age", so freshly-added
-  // items still get the New badge / show up in Fresh Treasure.
-  if (!added) return true;
+  if (!added) return false;
   var diffDays = (today - added) / 86400000;
   return diffDays >= 0 && diffDays <= NEW_DAYS;
 }
-// Shared "most recently added first" comparator for anything with .added
-// (a Date or null) and ._idx (its position in the sheet, which only grows
-// as new rows are appended). Items with no recorded Date Added are assumed
-// to be the newest (see isNew() above) and are ordered among themselves by
-// sheet position -- a later row is a more recently added item.
+// Shared "most recently added first" comparator. Items with no recorded/
+// recoverable date (see recoverAddedDates() below) sort last, tiebreak Name A-Z.
 function newestCompare(a, b) {
-  var aHas = !!a.added, bHas = !!b.added;
-  if (aHas && bHas) {
-    var ad = a.added.getTime(), bd = b.added.getTime();
-    if (ad !== bd) return bd - ad;
-  } else if (aHas !== bHas) {
-    return aHas ? 1 : -1;
-  } else {
-    var ai = a._idx || 0, bi = b._idx || 0;
-    if (ai !== bi) return bi - ai;
-  }
+  var ad = a.added ? a.added.getTime() : -Infinity;
+  var bd = b.added ? b.added.getTime() : -Infinity;
+  if (ad !== bd) return bd - ad;
   var an = (a.name || '').toLowerCase(), bn = (b.name || '').toLowerCase();
   if (an < bn) return -1;
   if (an > bn) return 1;
   return 0;
+}
+
+// ----------------------------------------------- ID-TIMESTAMP DATE RECOVERY --
+// The Inventory sheet's ID column (e.g. "c91cc944-mswto09v") ends in a
+// base36-encoded millisecond-epoch timestamp assigned when the row's ID was
+// generated -- this is usually a much more reliable "date added" than the
+// human-filled Date Added column, which is very often left blank. The catch:
+// a one-time bulk migration stamped a huge batch of pre-existing rows with
+// IDs all generated on the same day, which is NOT their real add date --
+// only Date Added (if present) is trustworthy for those. We tell the two
+// apart at load time: any calendar day shared by an anomalously large number
+// of items' ID timestamps is almost certainly a migration/import batch, not
+// genuine same-day additions, and is ignored as a date source.
+var ID_DAY_BATCH_THRESHOLD = 20; // a day used by more items than this is treated as a bulk-import artifact, not real per-item add dates
+function idTimestamp(idStr) {
+  if (!idStr) return null;
+  var i = idStr.lastIndexOf('-');
+  if (i === -1) return null;
+  var suffix = idStr.slice(i + 1);
+  if (!/^[0-9a-z]+$/i.test(suffix)) return null;
+  var n = parseInt(suffix, 36);
+  if (!isFinite(n)) return null;
+  // plausible millisecond-epoch range: 2015-01-01 through ~2 days from now
+  if (n < 1420070400000 || n > Date.now() + 2 * 86400000) return null;
+  var d = new Date(n);
+  return isNaN(d.getTime()) ? null : d;
+}
+function dayKey(d) { return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); }
+// Fills in item.added from its ID's embedded timestamp wherever Date Added
+// was left blank and that ID's day isn't a flagged bulk-import day.
+function recoverAddedDates(items) {
+  var dayCounts = {};
+  items.forEach(function (p) {
+    var ts = idTimestamp(p.id);
+    p._idTs = ts;
+    if (ts) { var k = dayKey(ts); dayCounts[k] = (dayCounts[k] || 0) + 1; }
+  });
+  items.forEach(function (p) {
+    if (!p.added && p._idTs && dayCounts[dayKey(p._idTs)] <= ID_DAY_BATCH_THRESHOLD) {
+      p.added = p._idTs;
+    }
+    delete p._idTs;
+  });
 }
 
 // ------------------------------------------------------- GVIZ CELL HELPERS --
@@ -175,7 +204,7 @@ function fetchTab(sheetId, tab, cb) {
 function loadPops(cb) {
   fetchTab(INV_SHEET_ID, TAB_POPS, function (err, rows) {
     if (err) { cb(err); return; }
-    allPops = rows.map(function (r) {
+    var mapped = rows.map(function (r) {
       return {
         name: cellStr(r, 0),
         number: cellStr(r, 1),
@@ -191,7 +220,9 @@ function loadPops(cb) {
         featured: cellBool(r, 11),
         id: cellStr(r, 12)
       };
-    }).filter(function (p) { return p.name && p.qty > 0; });
+    });
+    recoverAddedDates(mapped);
+    allPops = mapped.filter(function (p) { return p.name && p.qty > 0; });
     allPops.forEach(function (p, i) { p._idx = i; });
     cb(null);
   });
