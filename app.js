@@ -66,9 +66,34 @@ function fmtDateRange(start, end) {
   return fmtDate(start) + ' – ' + fmtDate(end);
 }
 function isNew(added, today) {
-  if (!added) return false;
+  // A blank "Date Added" cell shows up on the newest rows added via the
+  // desktop app (it isn't writing that column on insert) -- treat "no date
+  // on file" as "just added" rather than "unknown age", so freshly-added
+  // items still get the New badge / show up in Fresh Treasure.
+  if (!added) return true;
   var diffDays = (today - added) / 86400000;
   return diffDays >= 0 && diffDays <= NEW_DAYS;
+}
+// Shared "most recently added first" comparator for anything with .added
+// (a Date or null) and ._idx (its position in the sheet, which only grows
+// as new rows are appended). Items with no recorded Date Added are assumed
+// to be the newest (see isNew() above) and are ordered among themselves by
+// sheet position -- a later row is a more recently added item.
+function newestCompare(a, b) {
+  var aHas = !!a.added, bHas = !!b.added;
+  if (aHas && bHas) {
+    var ad = a.added.getTime(), bd = b.added.getTime();
+    if (ad !== bd) return bd - ad;
+  } else if (aHas !== bHas) {
+    return aHas ? 1 : -1;
+  } else {
+    var ai = a._idx || 0, bi = b._idx || 0;
+    if (ai !== bi) return bi - ai;
+  }
+  var an = (a.name || '').toLowerCase(), bn = (b.name || '').toLowerCase();
+  if (an < bn) return -1;
+  if (an > bn) return 1;
+  return 0;
 }
 
 // ------------------------------------------------------- GVIZ CELL HELPERS --
@@ -271,7 +296,7 @@ function renderWhatsNew() {
   var items = [];
   allPops.forEach(function (p) { if (isNew(p.added, today)) items.push({ kind: 'pop', item: p }); });
   allAutos.forEach(function (a) { if (isNew(a.added, today)) items.push({ kind: 'auto', item: a }); });
-  items.sort(function (a, b) { return (b.item.added || 0) - (a.item.added || 0); });
+  items.sort(function (a, b) { return newestCompare(a.item, b.item); });
   var el = document.getElementById('whatsNewSection');
   if (!items.length) { el.style.display = 'none'; return; }
   el.style.display = 'block';
@@ -428,11 +453,7 @@ function sortPops(arr, mode) {
   var copy = arr.slice();
   switch (mode) {
     case 'newest':
-      copy.sort(function (a, b) {
-        var ad = a.added ? a.added.getTime() : 0, bd = b.added ? b.added.getTime() : 0;
-        if (ad !== bd) return bd - ad;
-        return byNameAsc(a, b);
-      });
+      copy.sort(newestCompare);
       break;
     case 'featured':
       copy.sort(function (a, b) {
