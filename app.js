@@ -11,8 +11,7 @@ var TAB_POPS     = 'Inventory';
 var TAB_AUTOS    = 'Autographs';
 
 var CAL_SHEET_ID = '1mb8i23IzL-6dYh3Qz3roJaz5_0pLtiw7cFGCVLzqyPU';
-var TAB_VENDING  = 'Vending';
-var TAB_SENDIN   = 'Send-In';
+var TAB_SCHEDULE = 'Schedule';
 
 var NEW_DAYS = 30; // items added within this many days get a "New" badge
 
@@ -177,7 +176,7 @@ function isJunkName(name) {
   if (!name) return true;
   var n = name.toLowerCase();
   if (n.indexOf('e.g.') !== -1) return true;
-  if (n === 'event name' || n === 'send-in shows' || n === 'vending shows') return true;
+  if (n === 'event name' || n === 'send-in shows' || n === 'vending shows' || n === 'schedule') return true;
   return false;
 }
 
@@ -252,41 +251,43 @@ function loadAutos(cb) {
     cb(null);
   });
 }
-function loadVending(cb) {
-  fetchTab(CAL_SHEET_ID, TAB_VENDING, function (err, rows) {
+// The Calendar sheet's old separate "Vending" and "Send-In" tabs were merged
+// into one "Schedule" tab with a Public?/Type-driven layout:
+//   A Event Name | B Public? | C Type (Vending / Send-In / Personal) |
+//   D Attending Starting Date | E Attending Ending Date |
+//   F Send-In Deadline Date | G Vending Location |
+//   H Additional Notes and/or Notable Guests | I Website
+// A row only reaches the site when Public? is checked; "Personal" rows (and
+// anything else the Type column doesn't recognize) are for the owner's own
+// use and are always skipped, regardless of Public?.
+function loadSchedule(cb) {
+  fetchTab(CAL_SHEET_ID, TAB_SCHEDULE, function (err, rows) {
     if (err) { cb(err); return; }
-    allVending = rows.map(function (r) {
+    var vending = [], sendIn = [];
+    rows.forEach(function (r) {
       var name = cellStr(r, 0);
-      if (isJunkName(name)) return null;
-      return {
-        name: name,
-        start: cellDate(r, 1),
-        end: cellDate(r, 2),
-        location: cellStr(r, 3),
-        notes: cellStr(r, 4),
-        link: cellStr(r, 5)
-      };
-    }).filter(Boolean).filter(function (v) { return v.start; });
-    cb(null);
-  });
-}
-function loadSendIn(cb) {
-  fetchTab(CAL_SHEET_ID, TAB_SENDIN, function (err, rows) {
-    if (err) { cb(err); return; }
-    allSendIn = rows.map(function (r) {
-      var name = cellStr(r, 0);
-      if (isJunkName(name)) return null;
-      var attending = cellDate(r, 1);
-      var deadline = cellDate(r, 2);
-      if (!attending && !deadline) return null;
-      return {
-        name: name,
-        attending: attending,
-        deadline: deadline,
-        notes: cellStr(r, 3),
-        link: cellStr(r, 4)
-      };
-    }).filter(Boolean);
+      if (isJunkName(name)) return;
+      if (!cellBool(r, 1)) return; // Public? unchecked -- never shown on the site
+      var type = cellStr(r, 2).toLowerCase().trim();
+      var start = cellDate(r, 3);
+      var end = cellDate(r, 4);
+      var deadline = cellDate(r, 5);
+      var location = cellStr(r, 6);
+      var notes = cellStr(r, 7);
+      var link = cellStr(r, 8);
+
+      if (type === 'vending') {
+        if (!start) return;
+        vending.push({ name: name, start: start, end: end || start, location: location, notes: notes, link: link });
+      } else if (type === 'send-in' || type === 'sendin' || type === 'send in') {
+        if (!start && !deadline) return;
+        sendIn.push({ name: name, attending: start, attendingEnd: end || start, deadline: deadline, notes: notes, link: link });
+      }
+      // type === 'personal' (or anything unrecognized) is intentionally
+      // skipped -- personal-use-only rows never appear on the site
+    });
+    allVending = vending;
+    allSendIn = sendIn;
     cb(null);
   });
 }
@@ -294,7 +295,8 @@ function loadSendIn(cb) {
 // Send-in lifecycle: 'open' (before deadline) -> 'closed' (deadline passed,
 // show hasn't happened yet) -> 'past' (show has happened, drops off the list)
 function sendInState(item, today) {
-  if (item.attending && item.attending < today) return 'past';
+  var showRef = item.attendingEnd || item.attending;
+  if (showRef && showRef < today) return 'past';
   if (item.deadline && item.deadline < today) return 'closed';
   return 'open';
 }
@@ -363,7 +365,7 @@ function renderShowAlert() {
     var label = c.state === 'closed' ? 'Send-Ins Closed' : 'Send-In Opportunity';
     var metaBits = [];
     if (c.item.deadline) metaBits.push('Send in by ' + fmtDate(c.item.deadline));
-    if (c.item.attending) metaBits.push('Show: ' + fmtDate(c.item.attending));
+    if (c.item.attending) metaBits.push('Show: ' + fmtDateRange(c.item.attending, c.item.attendingEnd));
     html = '<div class="sa-icon">✏️</div><div class="sa-body"><div class="sa-label">' + label + '</div>'
       + '<div class="sa-title">' + esc(c.item.name) + '</div>'
       + '<div class="sa-meta">' + esc(metaBits.join(' · ')) + '</div></div>';
@@ -409,7 +411,7 @@ function renderSendInCard(showBadge) {
     }
     var meta = [];
     if (s.deadline) meta.push('Send in by: ' + fmtDate(s.deadline));
-    if (s.attending) meta.push('Show: ' + fmtDate(s.attending));
+    if (s.attending) meta.push('Show: ' + fmtDateRange(s.attending, s.attendingEnd));
     return '<div class="show-card"><div><div class="sc-name">' + esc(s.name) + '</div>'
       + '<div class="sc-meta">' + esc(meta.join(' · ')) + (s.notes ? '<br>' + esc(s.notes) : '') + '</div></div>'
       + '<div style="display:flex;align-items:center;gap:8px;">' + badgeHtml + (s.link ? '<a class="sc-link" href="' + esc(ensureUrl(s.link)) + '" target="_blank" rel="noopener">Details &rarr;</a>' : '') + '</div>'
@@ -753,13 +755,9 @@ function loadAll() {
     renderGrails();
     renderWhatsNew();
   });
-  loadVending(function (err) {
-    if (!err) { renderVending(); renderShowAlert(); }
-    else { hide('loadVending'); }
-  });
-  loadSendIn(function (err) {
-    hide('loadSendinHome'); hide('loadSendinFull');
-    if (!err) { renderSendIn(); renderShowAlert(); }
+  loadSchedule(function (err) {
+    hide('loadVending'); hide('loadSendinHome'); hide('loadSendinFull');
+    if (!err) { renderVending(); renderSendIn(); renderShowAlert(); }
   });
 }
 
